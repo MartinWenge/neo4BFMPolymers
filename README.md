@@ -23,6 +23,7 @@ You can insert the data manually, or parse bfm files or output files from [LeMon
 ## Documentation
 
 The documentation is done with [DocStrings](https://www.python.org/dev/peps/pep-0257/).
+To call a documentation, run `help( class or function )`.
 
 ## Dependencies
 
@@ -33,3 +34,6 @@ The following python libraries are used:
 * [pandas](https://pandas.pydata.org/)
 * [datetime](https://docs.python.org/3/library/datetime.html)
 
+## ToDos
+
+* add a test environment
