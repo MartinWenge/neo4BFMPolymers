@@ -23,3 +23,13 @@ You can insert the data manually, or parse bfm files or output files from [LeMon
 ## Documentation
 
 The documentation is done with [DocStrings](https://www.python.org/dev/peps/pep-0257/).
+
+## Dependencies
+
+Naturally, the python tools need a running [neo4j](https://neo4j.com/) database that can be accessed by the [Graph class](https://py2neo.org/v4/database.html#the-graph).
+
+The following python libraries are used:
+* [py2neo](https://py2neo.org/v4/)
+* [pandas](https://pandas.pydata.org/)
+* [datetime](https://docs.python.org/3/library/datetime.html)
+
