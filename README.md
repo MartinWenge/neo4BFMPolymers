@@ -1,4 +1,4 @@
-
+![example of polymer and simulations in te database](figures/sketch_polymers_simulations.png)
 # neo4BFMPolymers
 
 > Access a [neo4j](https://neo4j.com/) database to efficiently organize simulations of polymers, using the [bond fluctuation model (BFM)](https://en.wikipedia.org/wiki/Bond_fluctuation_model) and the [LeMonADE library](https://github.com/LeMonADE-project).
