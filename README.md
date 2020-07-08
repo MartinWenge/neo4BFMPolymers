@@ -5,6 +5,7 @@
 
 [![GitHub issues open](https://img.shields.io/github/issues/MartinWenge/neo4BFMPolymers)](https://github.com/MartinWenge/neo4BFMPolymers/issues)
 
+[![CircleCI](https://circleci.com/gh/MartinWenge/neo4BFMPolymers.svg?style=svg&circle-token=384ea1a8f93ec4063c766071ee8bb1544a0b1a26)](https://app.circleci.com/pipelines/gh/MartinWenge/neo4BFMPolymers)
 
 ## Python interface for a graph based database
 
