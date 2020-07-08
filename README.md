@@ -34,6 +34,9 @@ The following python libraries are used:
 * [py2neo](https://py2neo.org/v4/)
 * [pandas](https://pandas.pydata.org/)
 * [datetime](https://docs.python.org/3/library/datetime.html)
+* [os](https://docs.python.org/3/library/os.html)
+* [sys](https://docs.python.org/3/library/sys.html)
+* [inspect](https://docs.python.org/3/library/inspect.html)
 
 ## Tests
 
@@ -42,7 +45,7 @@ The following python libraries are used:
 
 ## Linter
 
-* the python linter [flake8] is used with the call `flake8 --statistics --ignore E501,E402`
+* the python linter [flake8](https://pypi.org/project/flake8/) is used with the call `flake8 --statistics --ignore E501,E402`
 * -> the maximum length of the line and imports at the very beginning of the -py files are ignored
 * the linter is not included in the CI pipeline, but it is recommended to use it
 
