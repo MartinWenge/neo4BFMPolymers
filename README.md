@@ -34,6 +34,17 @@ The following python libraries are used:
 * [pandas](https://pandas.pydata.org/)
 * [datetime](https://docs.python.org/3/library/datetime.html)
 
-## ToDos
+## Tests
 
-* add a test environment
+* the python test framework [pytest](https://docs.pytest.org/en/latest/) is used
+* run the tests from the head directory by `pytest tests/`
+
+## Linter
+
+* the python linter [flake8] is used with the call `flake8 --statistics --ignore E501,E402`
+* -> the maximum length of the line and imports at the very beginning of the -py files are ignored
+* the linter is not included in the CI pipeline, but it is recommended to use it
+
+## Continous integration
+
+* the CI pipeline was set up following a [realpython tutorial](https://realpython.com/python-continuous-integration/) 
