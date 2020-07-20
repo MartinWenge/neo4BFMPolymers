@@ -4,7 +4,6 @@
 > Access a [neo4j](https://neo4j.com/) database to efficiently organize simulations of polymers, using the [bond fluctuation model (BFM)](https://en.wikipedia.org/wiki/Bond_fluctuation_model) and the [LeMonADE library](https://github.com/LeMonADE-project).
 
 [![GitHub issues open](https://img.shields.io/github/issues/MartinWenge/neo4BFMPolymers)](https://github.com/MartinWenge/neo4BFMPolymers/issues)
-
 [![CircleCI](https://circleci.com/gh/MartinWenge/neo4BFMPolymers.svg?style=svg&circle-token=384ea1a8f93ec4063c766071ee8bb1544a0b1a26)](https://app.circleci.com/pipelines/gh/MartinWenge/neo4BFMPolymers)
 
 ## Python interface for a graph based database
@@ -36,6 +35,7 @@ The following python libraries are used:
 * [datetime](https://docs.python.org/3/library/datetime.html)
 * [os](https://docs.python.org/3/library/os.html)
 * [sys](https://docs.python.org/3/library/sys.html)
+* [socket](https://docs.python.org/3/library/socket.html)
 * [inspect](https://docs.python.org/3/library/inspect.html)
 
 ## Tests
