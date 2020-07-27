@@ -45,7 +45,7 @@ The following python libraries are used:
 
 ## Linter
 
-* the python linter [flake8](https://pypi.org/project/flake8/) is used with the call `flake8 --statistics --ignore E501,E402`
+* the python linter [flake8](https://pypi.org/project/flake8/) is used with the call `flake8 --statistics --ignore E501,E402,E221`
 * -> the maximum length of the line and imports at the very beginning of the -py files are ignored
 * the linter is not included in the CI pipeline, but it is recommended to use it
 
