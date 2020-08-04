@@ -470,7 +470,7 @@ class neo2BFMPolymer:
         '''
         nodeNameSimRun = simulationRunName
         nodeNameBox    = "BoxSize"
-        nodeValueBox   = "{} x {} x {}".format(boxX, boxY, boxZ)
+        nodeValueBox   = "[{}, {}, {}]".format(boxX, boxY, boxZ)
 
         return self.addParameterSimulationRunGeneral(nodeNameSimRun, nodeNameBox, nodeValueBox)
 
@@ -493,7 +493,7 @@ class neo2BFMPolymer:
         '''
         nodeNameSimRun       = simulationRunName
         nodeNamePeriodicity  = "Periodicity"
-        nodeValuePeriodicity = "{} x {} x {}".format(pX, pY, pZ)
+        nodeValuePeriodicity = "[{0:d}, {1:d}, {2:d}]".format(int(pX), int(pY), int(pZ))
 
         return self.addParameterSimulationRunGeneral(nodeNameSimRun, nodeNamePeriodicity, nodeValuePeriodicity)
 
@@ -733,7 +733,7 @@ class neo2BFMPolymer:
             featureName = "FeatureBox"
             if (featureName in featureList):
                 parameterName = "BoxSize"
-                parameterValue = "{} x {} x {}".format(boxSizeX, boxSizeY, boxSizeZ)
+                parameterValue = "[{}, {}, {}]".format(boxSizeX, boxSizeY, boxSizeZ)
                 self.connectParameterToFeatureGeneral(featureName, parameterName, parameterValue)
         # ## ---------  boxsize  ---------- ###
 
@@ -755,7 +755,7 @@ class neo2BFMPolymer:
             featureName = "FeatureBox"
             if (featureName in featureList):
                 parameterName = "Periodicity"
-                parameterValue = "{} x {} x {}".format(periodicityX, periodicityY, periodicityZ)
+                parameterValue = "[{0:d}, {0:d}, {0:d}]".format(int(periodicityX), int(periodicityY), int(periodicityZ))
                 self.connectParameterToFeatureGeneral(featureName, parameterName, parameterValue)
         # ## -------  periodicity  -------- ###
 
