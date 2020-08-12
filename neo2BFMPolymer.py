@@ -755,7 +755,7 @@ class neo2BFMPolymer:
             featureName = "FeatureBox"
             if (featureName in featureList):
                 parameterName = "Periodicity"
-                parameterValue = "[{0:d}, {0:d}, {0:d}]".format(int(periodicityX), int(periodicityY), int(periodicityZ))
+                parameterValue = "[{0:d}, {1:d}, {2:d}]".format(int(periodicityX), int(periodicityY), int(periodicityZ))
                 self.connectParameterToFeatureGeneral(featureName, parameterName, parameterValue)
         # ## -------  periodicity  -------- ###
 
