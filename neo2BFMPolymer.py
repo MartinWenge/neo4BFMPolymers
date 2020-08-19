@@ -622,6 +622,27 @@ class neo2BFMPolymer:
 
         return self.addParameterSimulationRunGeneral(nodeNameSimRun, nodeNameDendrSpacer, nodeValueDendrSpacer)
 
+    def addNumberOfMonomersToSimulationRun(self, simulationRunName, N):
+        '''Connect a SimulationRun node with a Parameter node of name NumberOfMonomers with the given value.
+
+        A parameter node with name NumberOfMonomers contains a value N
+        that can be connected to any SimulationRun node that uses this parameter.
+        If the NumberOfMonomers node does not exist, it is created and then connected to the SimulationRun.
+
+        Parameters:
+            simulationRunName (str): name of the SimulationRun node
+            N (int): total number of BFM units in a simulation box
+
+        Returns:
+            exit code (bool): True if connection was added, False if connection already exists
+                              or SimulationRun node does not exist
+        '''
+        nodeNameSimRun       = simulationRunName
+        nodeNameNumOfMonos  = "NumberOfMonomers"
+        nodeValueNumOfMonos = "{}".format(N)
+
+        return self.addParameterSimulationRunGeneral(nodeNameSimRun, nodeNameNumOfMonos, nodeValueNumOfMonos)
+
     # ## -------------- # ## -------------- # ## -------------- ###
     # ## --------------   add result functions  ------------- ###
     # ## -------------- # ## -------------- # ## -------------- ###
