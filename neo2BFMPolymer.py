@@ -349,6 +349,14 @@ class neo2BFMPolymer:
         self.graph.run(query)
         return True
 
+    def _featureName_format(self, featureName):
+        '''remove template arguments from feature name'''
+        idxTemplateBracket = featureName.find("<")
+        if (idxTemplateBracket != -1):
+            return featureName[:idxTemplateBracket]
+        else:    
+            return featureName
+
     def addFeatureToSimulationRun(self, simulationRunName, featureName):
         '''Connect a LeMonADEFeature node to a SimulationRun already present in the database.
 
@@ -368,7 +376,8 @@ class neo2BFMPolymer:
         nodeNameSimRun     = simulationRunName
 
         nodeTypeFeature = self.nodeType_feature
-        nodeNameFeature = featureName
+        # truncate the feature name to skip template parameters
+        nodeNameFeature = self._featureName_format(featureName)
 
         connectionType = self.connectionType_simRunParameter  # "USES"
 
@@ -773,7 +782,7 @@ class neo2BFMPolymer:
                     if(self.addNNInteractionToSimulationRun(simulationRunName, nn)):
                         my_nn_interaction.append(nn)
 
-        featureName = "FeatureNNInteractionSc<FeatureLatticePowerOfTwo>"
+        featureName = "FeatureNNInteractionSc"
         # maybe other template versions of this feature may appear, for now this is sufficient...
         if (featureName in featureList):
             parameterName = "NNInteraction"
