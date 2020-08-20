@@ -354,7 +354,7 @@ class neo2BFMPolymer:
         idxTemplateBracket = featureName.find("<")
         if (idxTemplateBracket != -1):
             return featureName[:idxTemplateBracket]
-        else:    
+        else:
             return featureName
 
     def addFeatureToSimulationRun(self, simulationRunName, featureName):
@@ -622,12 +622,12 @@ class neo2BFMPolymer:
 
         return self.addParameterSimulationRunGeneral(nodeNameSimRun, nodeNameDendrSpacer, nodeValueDendrSpacer)
 
-    def addNumberOfMonomersToSimulationRun(self, simulationRunName, N):
-        '''Connect a SimulationRun node with a Parameter node of name NumberOfMonomers with the given value.
+    def addTotalNumberOfMonomersToSimulationRun(self, simulationRunName, N):
+        '''Connect a SimulationRun node with a Parameter node of name TotalNumberOfMonomers with the given value.
 
-        A parameter node with name NumberOfMonomers contains a value N
+        A parameter node with name TotalNumberOfMonomers contains a value N
         that can be connected to any SimulationRun node that uses this parameter.
-        If the NumberOfMonomers node does not exist, it is created and then connected to the SimulationRun.
+        If the TotalNumberOfMonomers node does not exist, it is created and then connected to the SimulationRun.
 
         Parameters:
             simulationRunName (str): name of the SimulationRun node
@@ -638,7 +638,7 @@ class neo2BFMPolymer:
                               or SimulationRun node does not exist
         '''
         nodeNameSimRun       = simulationRunName
-        nodeNameNumOfMonos  = "NumberOfMonomers"
+        nodeNameNumOfMonos  = "TotalNumberOfMonomers"
         nodeValueNumOfMonos = "{}".format(N)
 
         return self.addParameterSimulationRunGeneral(nodeNameSimRun, nodeNameNumOfMonos, nodeValueNumOfMonos)
@@ -744,6 +744,13 @@ class neo2BFMPolymer:
             for feature in featureList:
                 self.addFeatureToSimulationRun(simulationRunName, feature)
         # ## ---------  features  --------- ###
+
+        # ## ---------  total number of monomers  --------- ###
+        numOfMonomersKey = "number_of_monomers"
+        numOfMonomers = self._findElementInKeyValueDataList(numOfMonomersKey, dataArray)
+        if(numOfMonomers is not None):
+            self.addTotalNumberOfMonomersToSimulationRun(simulationRunName, numOfMonomers)
+        # ## ---------  total number of monomers  --------- ###
 
         # ## ---------  boxsize  ---------- ###
         boxSizeKeyX = "box_x"

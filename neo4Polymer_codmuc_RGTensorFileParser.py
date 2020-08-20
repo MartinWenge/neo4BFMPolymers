@@ -17,7 +17,7 @@ class neo4Polymer_cudmuc_RgTensor_fileparser:
         """
         self.filename = fn
         self.key_dict = {
-            'number_of_monomers': re.compile(r'!number_of_monomers=(?P<number_of_monomers>\d+)\n'),
+            'number_of_monomers': re.compile(r'#[ \t]+Number of monomers:[ \t](?P<number_of_monomers>\d+)\n'),
             'feature_name': re.compile(r'# Feature(?P<feature_name>.*)\n'),
             'data_block': re.compile(r'# ID[ \t]+(\w+)[ \t]+(\w+)[ \t]+(\w+)[ \t]+(\w+)[ \t]+(\w+)[ \t]+(\w+)[ \t]+(\w+)[ \t]+([\w<>]+)\n')
         }

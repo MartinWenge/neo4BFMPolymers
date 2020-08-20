@@ -1,0 +1,23 @@
+# 
+# registered features: 
+# 
+# FeatureMoleculesIO
+# 	Number of monomers: 3324
+# 	max connectivity: 4
+# FeatureBox
+# FeatureBondset<FastBondset>
+# FeatureAttributes<int>
+# 
+# not registered features: 
+# 
+# #!version
+# !nn_interaction
+# endoffile
+# 
+# Radius of gyration tensor evaluation for copolymersID: molecule and group identifier, Rg^2 Components, RgT Eigenvalues (L..) and asphericity
+# (see 10.1088/0305-4470/19/4/004)
+# ID	Rg2	Rgx2	Rgy2	Rgz2	L1	L2	L3	<A>
+
+d_277	66.957847	22.233301	22.474591	22.249955	12.351407	20.566271	34.040170	0.100552	
+l_277	4.863455	1.620148	1.622357	1.620950	0.131665	0.790766	3.941024	0.678891	
+t_277	110.308552	36.630357	36.967311	36.710884	22.463687	34.834337	53.010527	0.072358	
