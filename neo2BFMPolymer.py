@@ -2,6 +2,7 @@ from datetime import date
 import os
 import socket
 import neo4Polymer_bfmFileParser as bfmParser
+import neo4Polymer_codmuc_RGTensorFileParser as codmucRgTParser
 
 
 class neo2BFMPolymer:
@@ -646,6 +647,10 @@ class neo2BFMPolymer:
     # ## -------------- # ## -------------- # ## -------------- ###
     # ## --------------   add result functions  ------------- ###
     # ## -------------- # ## -------------- # ## -------------- ###
+    def _numericalResult_4digits_format(self, result):
+        '''reduce float precision to 4 digits formated as a string'''
+        return "{:.4f}".format(result)
+
     def addResultRadiusOfGyration(self, simulationRunName, Rg):
         '''Adding a Result node with a single value or an array of the radius of gyration of a particular SimulationRun.
 
@@ -706,6 +711,11 @@ class neo2BFMPolymer:
 
         Parameters:
             simulationRunName (str): name of the simulationRun
+            filename (str): name of the BFM file
+
+        Returns:
+            True if file content was added properly
+            False if errors occur
         '''
         # first check if the simulation run exists
         elementExists = self.graph.run("MATCH (elem:{}) WHERE elem.name=\"{}\" return elem".format(self.nodeType_simulationRun, simulationRunName)).data()
@@ -749,7 +759,7 @@ class neo2BFMPolymer:
         numOfMonomersKey = "number_of_monomers"
         numOfMonomers = self._findElementInKeyValueDataList(numOfMonomersKey, dataArray)
         if(numOfMonomers is not None):
-            self.addTotalNumberOfMonomersToSimulationRun(simulationRunName, numOfMonomers)
+            self.addTotalNumberOfMonomersToSimulationRun(simulationRunName, int(numOfMonomers[0]))
         # ## ---------  total number of monomers  --------- ###
 
         # ## ---------  boxsize  ---------- ###
@@ -823,6 +833,81 @@ class neo2BFMPolymer:
                 parameterValue = self._nnInteraction_format(my_nn_interaction)
                 self.connectParameterToFeatureGeneral(featureName, parameterName, parameterValue)
         # ## -----  nn_interactions  ------ ###
+
+        # finally return True if no errors occurred
+        return True
+
+    def addCODMUCRgTensorFileToDatabase(self, simulationRunName, filename):
+        '''High level user function to add nodes to the database by reading a radius of gyration Tensor file, using the neo4Polymer_codmuc_RGTensorFileParser.
+
+        Parameters:
+            simulationRunName (str): name of the simulationRun
+            filename (str): name of the radius of gyration tensor file
+
+        Returns:
+            True if file content was added properly
+            False if errors occur
+        '''
+        # first check if the simulation run exists
+        elementExists = self.graph.run("MATCH (elem:{}) WHERE elem.name=\"{}\" return elem".format(self.nodeType_simulationRun, simulationRunName)).data()
+        if (len(elementExists) == 0):
+            print("WARNING: {} does not exist. To add data from a BFM file, the simulationRun node must exist!".format(simulationRunName))
+            return False
+
+        # check if file exists
+        if(os.path.isfile(filename)):
+            # get full path to filename WITHOUT backslashes!
+            pathToRgTFile = "{}: {}".format(socket.gethostname(), os.path.abspath(filename))
+            checkForBackslashes = pathToRgTFile.replace('\\', '/')
+            if (pathToRgTFile != checkForBackslashes):
+                pathToRgTFile = checkForBackslashes
+                print("WARNING: replaced backslashes in filepath to slashes: {}".format(pathToRgTFile))
+
+            # now you may add it to the simulationRun node
+            self.addPathToSimulationRun(simulationRunName, pathToRgTFile)
+        else:
+            print("WARNING: file {} does not exist!".format(filename))
+            return False
+
+        # start the bfm file reader
+        fileReader = codmucRgTParser.neo4Polymer_cudmuc_RgTensor_fileparser(filename)
+
+        # get the data-array
+        dataArray = fileReader.parse_file()
+
+        # extract a keywords from the data array
+        # start with features to connect the parameters!
+
+        # ## ---------  features  --------- ###
+        featureKey = "feature_name"
+        featureList = self._findElementInKeyValueDataList(featureKey, dataArray)
+        if(featureList is not None):
+            for feature in featureList:
+                self.addFeatureToSimulationRun(simulationRunName, feature)
+        # ## ---------  features  --------- ###
+
+        # ## ---------  total number of monomers  --------- ###
+        numOfMonomersKey = "number_of_monomers"
+        numOfMonomers = self._findElementInKeyValueDataList(numOfMonomersKey, dataArray)
+        if(numOfMonomers is not None):
+            self.addTotalNumberOfMonomersToSimulationRun(simulationRunName, int(numOfMonomers[0]))
+        # ## ---------  total number of monomers  --------- ###
+
+        # ## ---------  radius of gyration squared   --------- ###
+        dendrimer_rgSquaredKey = "dendrimer_Rg2"
+        dendrimer_rgSquared = self._findElementInKeyValueDataList(dendrimer_rgSquaredKey, dataArray)
+        graftedChains_rgSquaredKey = "graftedChains_Rg2"
+        graftedChains_rgSquared = self._findElementInKeyValueDataList(graftedChains_rgSquaredKey, dataArray)
+        totalMolecule_rgSquaredKey = "totalMolecule_Rg2"
+        totalMolecule_rgSquared = self._findElementInKeyValueDataList(totalMolecule_rgSquaredKey, dataArray)
+        if((dendrimer_rgSquared is not None) and (graftedChains_rgSquared is not None) and (totalMolecule_rgSquared is not None)):
+            formatedRgString = "[[{},{}],[{},{}],[{},{}]]".format(
+                "Rg^2 total codendrimer", self._numericalResult_4digits_format(float(totalMolecule_rgSquared[0])),
+                "Rg^2 dendritic core", self._numericalResult_4digits_format(float(dendrimer_rgSquared[0])),
+                "Rg^2 grafted chains", self._numericalResult_4digits_format(float(graftedChains_rgSquared[0]))
+            )
+            self.addResultRadiusOfGyration(simulationRunName, formatedRgString)
+        # ## ---------  radius of gyration squared   --------- ###
 
         # finally return True if no errors occurred
         return True

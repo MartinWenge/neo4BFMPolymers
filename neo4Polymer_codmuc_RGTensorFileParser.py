@@ -121,6 +121,5 @@ class neo4Polymer_cudmuc_RgTensor_fileparser:
             # close the file savely as there might be many files
             file_object.close()
 
-        print(data)
         return data
 #
