@@ -668,6 +668,23 @@ class neo2BFMPolymer:
 
         return self.addResultSimulationRunGeneral(nodeNameSimRun, nodeNameRg, nodeValueRg)
 
+    def addResultAsphericity(self, simulationRunName, A):
+        '''Adding a Result node with a single value or an array of the asphericity of a particular SimulationRun.
+
+        Parameters:
+            simulationRunName (str): name of the SimulationRun node
+            A (float,array): asphericity calculated for the conformations in the simulation run.
+
+        Returns:
+            exit code (bool): True if connection was added, False if connection already exists
+                              or SimulationRun node does not exist
+        '''
+        nodeNameSimRun = simulationRunName
+        nodeNameA     = "Asphericity"
+        nodeValueA    = str(A)  # this needs to be improved!
+
+        return self.addResultSimulationRunGeneral(nodeNameSimRun, nodeNameA, nodeValueA)
+
     def addResultCenterToCenterDistribution(self, simulationRunName, c2c):
         '''Adding a Result node with an array of the center to center distances of a particular SimulationRun.
 
@@ -908,6 +925,22 @@ class neo2BFMPolymer:
             )
             self.addResultRadiusOfGyration(simulationRunName, formatedRgString)
         # ## ---------  radius of gyration squared   --------- ###
+
+        # ## ---------  Asphericity   --------- ###
+        dendrimer_asphericityKey = "dendrimer_<A>"
+        dendrimer_asphericity = self._findElementInKeyValueDataList(dendrimer_asphericityKey, dataArray)
+        graftedChains_asphericityKey = "graftedChains_<A>"
+        graftedChains_asphericity = self._findElementInKeyValueDataList(graftedChains_asphericityKey, dataArray)
+        totalMolecule_asphericityKey = "totalMolecule_<A>"
+        totalMolecule_asphericity = self._findElementInKeyValueDataList(totalMolecule_asphericityKey, dataArray)
+        if((dendrimer_asphericity is not None) and (graftedChains_asphericity is not None) and (totalMolecule_asphericity is not None)):
+            formatedAString = "[[{},{}],[{},{}],[{},{}]]".format(
+                "<A> total codendrimer", self._numericalResult_4digits_format(float(totalMolecule_asphericity[0])),
+                "<A> dendritic core", self._numericalResult_4digits_format(float(dendrimer_asphericity[0])),
+                "<A> grafted chains", self._numericalResult_4digits_format(float(graftedChains_asphericity[0]))
+            )
+            self.addResultAsphericity(simulationRunName, formatedAString)
+        # ## ---------  Asphericity   --------- ###
 
         # finally return True if no errors occurred
         return True
