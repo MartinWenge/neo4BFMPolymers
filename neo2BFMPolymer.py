@@ -766,7 +766,12 @@ class neo2BFMPolymer:
 
         # ## ---------  features  --------- ###
         featureKey = "feature_name"
-        featureList = self._findElementInKeyValueDataList(featureKey, dataArray)
+
+        featureList_full = self._findElementInKeyValueDataList(featureKey, dataArray)
+        # TODO: consider cases where parameter list might be usefull?
+        # TODO: feature name is formatted again in the addFeatureToSimulationRun for robustness, usefull?
+        featureList = [self._featureName_format(f) for f in featureList_full]
+        
         if(featureList is not None):
             for feature in featureList:
                 self.addFeatureToSimulationRun(simulationRunName, feature)
@@ -840,6 +845,7 @@ class neo2BFMPolymer:
         featureName = "FeatureNNInteractionSc"
         # maybe other template versions of this feature may appear, for now this is sufficient...
         if (featureName in featureList):
+            
             parameterName = "NNInteraction"
             # check, if my_nn_interaction contains more than one element to avoid
             if isinstance(my_nn_interaction, list):
