@@ -644,6 +644,49 @@ class neo2BFMPolymer:
 
         return self.addParameterSimulationRunGeneral(nodeNameSimRun, nodeNameNumOfMonos, nodeValueNumOfMonos)
 
+    def addNumberOfRingsToSimulationRun(self, simulationRunName, nRings):
+        '''Connect a SimulationRun node with a Parameter node of name NumberOfRings with the given value.
+
+        A parameter node with name NumberOfRings contains a value nRings
+        that can be connected to any SimulationRun node that uses this parameter.
+        If the NumberOfRings node does not exist, it is created and then connected to the SimulationRun.
+
+        Parameters:
+            simulationRunName (str): name of the SimulationRun node
+            nRings (int): total number of BFM units in the ring polymer
+
+        Returns:
+            exit code (bool): True if connection was added, False if connection already exists
+                              or SimulationRun node does not exist
+        '''
+        nodeNameSimRun         = simulationRunName
+        nodeNameNumberOfRings  = "NumberOfRings"
+        nodeValueNumberOfRings = "{}".format(int(nRings))
+
+        return self.addParameterSimulationRunGeneral(nodeNameSimRun, nodeNameNumberOfRings, nodeValueNumberOfRings)
+
+    def addNumberOfMonomersInRingToSimulationRun(self, simulationRunName, nMonosRing):
+        '''Connect a SimulationRun node with a Parameter node of name NumberOfMonomersInRing with the given value.
+
+        A parameter node with name NumberOfMonomersInRing contains a value nMonosRing
+        that can be connected to any SimulationRun node that uses this parameter.
+        If the NumberOfMonomersInRing node does not exist, it is created and then connected to the SimulationRun.
+
+        Parameters:
+            simulationRunName (str): name of the SimulationRun node
+            nMonosRing (int): total number of BFM units in the ring polymer
+
+        Returns:
+            exit code (bool): True if connection was added, False if connection already exists
+                              or SimulationRun node does not exist
+        '''
+        nodeNameSimRun                  = simulationRunName
+        nodeNameNumberOfMonomersInRing  = "NumberOfMonomersInRing"
+        nodeValueNumberOfMonomersInRing = "{}".format(int(nMonosRing))
+
+        return self.addParameterSimulationRunGeneral(nodeNameSimRun, nodeNameNumberOfMonomersInRing, nodeValueNumberOfMonomersInRing)
+
+
     # ## -------------- # ## -------------- # ## -------------- ###
     # ## --------------   add result functions  ------------- ###
     # ## -------------- # ## -------------- # ## -------------- ###
@@ -829,33 +872,55 @@ class neo2BFMPolymer:
         # ## -------  periodicity  -------- ###
 
         # ## -----  nn_interactions  ------ ###
-        nn_interactionKey = "nn_interaction"
-        nn_intertaction = self._findElementInKeyValueDataList(nn_interactionKey, dataArray)
-        my_nn_interaction = []
-        if(nn_intertaction is not None):
-            if(all(x == nn_intertaction[0] for x in nn_intertaction)):
-                self.addNNInteractionToSimulationRun(simulationRunName, nn_intertaction[0])
-                my_nn_interaction = [nn_intertaction[0]]
-            else:
-                print("WARNING: nn_interaction contains more than one value: {}\nTry to add all values, more Warnings may pop up".format(nn_intertaction))
-                for nn in nn_intertaction:
-                    if(self.addNNInteractionToSimulationRun(simulationRunName, nn)):
-                        my_nn_interaction.append(nn)
-
         featureName = "FeatureNNInteractionSc"
         # maybe other template versions of this feature may appear, for now this is sufficient...
         if (featureName in featureList):
-            
-            parameterName = "NNInteraction"
-            # check, if my_nn_interaction contains more than one element to avoid
-            if isinstance(my_nn_interaction, list):
-                for my_nn in my_nn_interaction:
-                    parameterValue = self._nnInteraction_format(my_nn)
+            nn_interactionKey = "nn_interaction"
+            nn_intertaction = self._findElementInKeyValueDataList(nn_interactionKey, dataArray)
+            my_nn_interaction = []
+            if(nn_intertaction is not None):
+                if(all(x == nn_intertaction[0] for x in nn_intertaction)):
+                    self.addNNInteractionToSimulationRun(simulationRunName, nn_intertaction[0])
+                    my_nn_interaction = [nn_intertaction[0]]
+                else:
+                    print("WARNING: nn_interaction contains more than one value: {}\nTry to add all values, more Warnings may pop up".format(nn_intertaction))
+                    for nn in nn_intertaction:
+                        if(self.addNNInteractionToSimulationRun(simulationRunName, nn)):
+                            my_nn_interaction.append(nn)
+
+                parameterName = "NNInteraction"
+                # try to connect all nnInteraction nodes to the feature, that have been added in this particular run
+                if isinstance(my_nn_interaction, list):
+                    for my_nn in my_nn_interaction:
+                        parameterValue = self._nnInteraction_format(my_nn)
+                        self.connectParameterToFeatureGeneral(featureName, parameterName, parameterValue)
+                else:
+                    parameterValue = self._nnInteraction_format(my_nn_interaction)
                     self.connectParameterToFeatureGeneral(featureName, parameterName, parameterValue)
-            else:
-                parameterValue = self._nnInteraction_format(my_nn_interaction)
-                self.connectParameterToFeatureGeneral(featureName, parameterName, parameterValue)
         # ## -----  nn_interactions  ------ ###
+
+        # ## -----  FeatureSystemInformationRingMelt ------ ## #
+        featureName = "FeatureSystemInformationRingMelt"
+        # sanity check: feature should exist and values should be not None
+        breakpoint()
+        if (featureName in featureList):
+            numOfRingsKey = "number_of_rings"
+            numOfRings = self._findElementInKeyValueDataList(numOfRingsKey, dataArray)
+            if (numOfRings is not None):
+                parameterName = "NumberOfRings"
+                parameterValue = numOfRings[0]
+                self.addNumberOfRingsToSimulationRun(simulationRunName,parameterValue)
+                self.connectParameterToFeatureGeneral(featureName, parameterName, parameterValue)
+
+            numOfMonomersInRingKey = "number_of_monomers_per_ring"
+            numOfMonomersInRing = self._findElementInKeyValueDataList(numOfMonomersInRingKey, dataArray)
+            if (numOfMonomersInRing is not None):
+                parameterName = "NumberOfMonomersInRing"
+                parameterValue = numOfMonomersInRing[0]
+                self.addNumberOfMonomersInRingToSimulationRun(simulationRunName,parameterValue)
+                self.connectParameterToFeatureGeneral(featureName, parameterName, parameterValue)
+        # ## -----  FeatureSystemInformationRingMelt ------ ## #
+
 
         # finally return True if no errors occurred
         return True

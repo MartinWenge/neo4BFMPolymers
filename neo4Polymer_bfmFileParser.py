@@ -27,6 +27,8 @@ class neo4Polymer_BFM_fileparser:
             'periodic_z': re.compile(r'!periodic_z=(?P<periodic_z>\d+)\n'),
             'nn_interaction': re.compile(r'!nn_interaction (\d) (\d) (?P<nn_interaction>\d+\.\d+)\n'),
             'feature_name': re.compile(r'# Feature(?P<feature_name>.*)\n'),
+            'number_of_rings': re.compile(r'#!number_of_rings=(?P<number_of_rings>\d+)\n'),
+            'number_of_monomers_per_ring': re.compile(r'#!number_of_monomers_per_ring=(?P<number_of_monomers_per_ring>\d+)\n')
         }
 
     def _parse_line(self, line):
@@ -101,6 +103,12 @@ class neo4Polymer_BFM_fileparser:
                     data.append([key, match])
 
                 if key == 'nn_interaction':
+                    data.append([key, match])
+
+                if key == 'number_of_rings':
+                    data.append([key, match])
+
+                if key == 'number_of_monomers_per_ring':
                     data.append([key, match])
 
                 if key == 'feature_name':
