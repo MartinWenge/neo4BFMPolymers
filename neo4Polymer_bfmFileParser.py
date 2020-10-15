@@ -27,6 +27,14 @@ class neo4Polymer_BFM_fileparser:
             'periodic_z': re.compile(r'!periodic_z=(?P<periodic_z>\d+)\n'),
             'nn_interaction': re.compile(r'!nn_interaction (\d) (\d) (?P<nn_interaction>\d+\.\d+)\n'),
             'feature_name': re.compile(r'# Feature(?P<feature_name>.*)\n'),
+            'number_of_rings': re.compile(r'#!number_of_rings=(?P<number_of_rings>\d+)\n'),
+            'number_of_monomers_per_ring': re.compile(r'#!number_of_monomers_per_ring=(?P<number_of_monomers_per_ring>\d+)\n'),
+            'number_of_tendomers': re.compile(r'#!number_of_tendomers=(?P<number_of_tendomers>\d+)\n'),
+            'number_of_crosslinkers': re.compile(r'#!number_of_crosslinkers=(?P<number_of_crosslinkers>\d+)\n'),
+            'number_of_labels_per_arm': re.compile(r'#!number_of_labels_per_arm=(?P<number_of_labels_per_arm>\d+)\n'),
+            'number_of_monomers_per_chain': re.compile(r'#!number_of_monomers_per_chain=(?P<number_of_monomers_per_chain>\d+)\n'),
+            'spring_potential_constant': re.compile(r'#!spring_potential_constant=(?P<spring_potential_constant>\d+)\n'),
+            'spring_potential_length': re.compile(r'#!spring_potential_length=(?P<spring_potential_length>\d+)\n')
         }
 
     def _parse_line(self, line):
@@ -103,13 +111,37 @@ class neo4Polymer_BFM_fileparser:
                 if key == 'nn_interaction':
                     data.append([key, match])
 
+                if key == 'number_of_rings':
+                    data.append([key, match])
+
+                if key == 'number_of_monomers_per_ring':
+                    data.append([key, match])
+
+                if key == 'number_of_tendomers':
+                    data.append([key, match])
+
+                if key == 'number_of_crosslinkers':
+                    data.append([key, match])
+
+                if key == 'number_of_labels_per_arm':
+                    data.append([key, match])
+
+                if key == 'number_of_monomers_per_chain':
+                    data.append([key, match])
+
+                if key == 'spring_potential_constant':
+                    data.append([key, match])
+
+                if key == 'spring_potential_length':
+                    data.append([key, match])
+
                 if key == 'feature_name':
                     data.append([key, "Feature" + match])
 
                 # read next line
                 line = file_object.readline()
 
-            # close the file savely as there might be many files
+            # close the file safely as there might be many files
             file_object.close()
 
         return data

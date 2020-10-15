@@ -29,7 +29,7 @@ class neo2BFMPolymer:
         nodeMatcher (py2neo.RelationshipMatcher): matcher for the graph to evaluate relationships according to certain criteria.
     """
     def __init__(self, graph):
-        """Constructor of the neo2BFMPolmyer class
+        """Constructor of the neo2BFMPolymer class
 
         Parameters:
             graph (py2neo.Graph): instance of the graph to access the neo4j database
@@ -47,6 +47,39 @@ class neo2BFMPolymer:
         self.nodeType_polymer           = "Polymer"
         self.nodeType_feature           = "LeMonADEFeature"
         self.nodeType_result            = "Result"
+
+    # ## -------------- # ## -------------- # ## -------------- ###
+    # ## --------------    formatter functions   -------------- ###
+    # ## -------------- # ## -------------- # ## -------------- ###
+    def _featureName_format(self, featureName):
+        '''remove template arguments from feature name'''
+        idxTemplateBracket = featureName.find("<")
+        if (idxTemplateBracket != -1):
+            return featureName[:idxTemplateBracket]
+        else:
+            return featureName
+
+    def _float_prec3_format(self, value):
+        '''Helper function to define a consistent format of float value properties like in the NNInteraction Parameter Node
+
+        Parameter:
+            value (str,float): value to be converted to string containing a x.xxx formated float number
+
+        Returns:
+            formated string with a given precision to make for instance NNInteraction Parameter Node easily findable
+        '''
+        return "{0:.3f}".format(float(value))
+
+    def _float_prec4_format(self, value):
+        '''Helper function to define a consistent format of float value properties like in the result Nodes
+
+        Parameter:
+            value (str,float): value to be converted to string containing a x.xxxx formated float number
+
+        Returns:
+            formated string with a given precision to make for instance result Nodes easily findable
+        '''
+        return "{:.4f}".format(float(value))
 
     # ## -------------- # ## -------------- # ## -------------- ###
     # ## --------------    utility functions   -------------- ###
@@ -350,14 +383,6 @@ class neo2BFMPolymer:
         self.graph.run(query)
         return True
 
-    def _featureName_format(self, featureName):
-        '''remove template arguments from feature name'''
-        idxTemplateBracket = featureName.find("<")
-        if (idxTemplateBracket != -1):
-            return featureName[:idxTemplateBracket]
-        else:
-            return featureName
-
     def addFeatureToSimulationRun(self, simulationRunName, featureName):
         '''Connect a LeMonADEFeature node to a SimulationRun already present in the database.
 
@@ -479,10 +504,10 @@ class neo2BFMPolymer:
                               or SimulationRun node does not exist
         '''
         nodeNameSimRun = simulationRunName
-        nodeNameBox    = "BoxSize"
-        nodeValueBox   = "[{}, {}, {}]".format(boxX, boxY, boxZ)
+        nodeName       = "BoxSize"
+        nodeValue      = "[{}, {}, {}]".format(boxX, boxY, boxZ)
 
-        return self.addParameterSimulationRunGeneral(nodeNameSimRun, nodeNameBox, nodeValueBox)
+        return self.addParameterSimulationRunGeneral(nodeNameSimRun, nodeName, nodeValue)
 
     def addPeriodicityToSimulationRun(self, simulationRunName, pX, pY, pZ):
         '''Connect a SimulationRun node with a Parameter node of name Periodicity with the given values.
@@ -501,22 +526,13 @@ class neo2BFMPolymer:
             exit code (bool): True if connection was added, False if connection already exists
                               or SimulationRun node does not exist
         '''
-        nodeNameSimRun       = simulationRunName
-        nodeNamePeriodicity  = "Periodicity"
-        nodeValuePeriodicity = "[{0:d}, {1:d}, {2:d}]".format(int(pX), int(pY), int(pZ))
+        nodeNameSimRun = simulationRunName
+        nodeName       = "Periodicity"
+        nodeValue      = "[{0:d}, {1:d}, {2:d}]".format(int(pX), int(pY), int(pZ))
 
-        return self.addParameterSimulationRunGeneral(nodeNameSimRun, nodeNamePeriodicity, nodeValuePeriodicity)
+        return self.addParameterSimulationRunGeneral(nodeNameSimRun, nodeName, nodeValue)
 
-    def _nnInteraction_format(self, epsilon):
-        '''Helper function to define a consistent format of the value property in an NNInteraction Parameter Node
-
-        Parameter:
-            epsilon (str,float): value of the NN interaction used by the LeMonADE FeatureNNInteraction
-
-        Returns:
-            formated string with a given precision to make NNInteraction Parameter Node easily findable
-        '''
-        return "{0:.3f}".format(float(epsilon))  # is this precision the best choice?
+    
 
     def addNNInteractionToSimulationRun(self, simulationRunName, epsilon):
         '''Connect a SimulationRun node with a Parameter node of name NNInteraction with the given value.
@@ -534,10 +550,10 @@ class neo2BFMPolymer:
                               or SimulationRun node does not exist
         '''
         nodeNameSimRun = simulationRunName
-        nodeNameNNInt  = "NNInteraction"
-        nodeValueNNInt = self._nnInteraction_format(epsilon)
+        nodeName       = "NNInteraction"
+        nodeValue      = self._float_prec3_format(epsilon)
 
-        return self.addParameterSimulationRunGeneral(nodeNameSimRun, nodeNameNNInt, nodeValueNNInt)
+        return self.addParameterSimulationRunGeneral(nodeNameSimRun, nodeName, nodeValue)
 
     def addLinearChainLengthToSimulationRun(self, simulationRunName, N):
         '''Connect a SimulationRun node with a Parameter node of name LinearChainLength with the given value.
@@ -554,11 +570,11 @@ class neo2BFMPolymer:
             exit code (bool): True if connection was added, False if connection already exists
                               or SimulationRun node does not exist
         '''
-        nodeNameSimRun       = simulationRunName
-        nodeNameChainLength  = "LinearChainLength"
-        nodeValueChainLength = "{}".format(N)
+        nodeNameSimRun = simulationRunName
+        nodeName       = "LinearChainLength"
+        nodeValue      = "{}".format(N)
 
-        return self.addParameterSimulationRunGeneral(nodeNameSimRun, nodeNameChainLength, nodeValueChainLength)
+        return self.addParameterSimulationRunGeneral(nodeNameSimRun, nodeName, nodeValue)
 
     def addGraftedChainLengthToSimulationRun(self, simulationRunName, N):
         '''Connect a SimulationRun node with a Parameter node of name GraftedChainLength with the given value.
@@ -575,11 +591,11 @@ class neo2BFMPolymer:
             exit code (bool): True if connection was added, False if connection already exists
                               or SimulationRun node does not exist
         '''
-        nodeNameSimRun              = simulationRunName
-        nodeNameGraftedChainLength  = "GraftedChainLength"
-        nodeValueGraftedChainLength = "{}".format(N)
+        nodeNameSimRun = simulationRunName
+        nodeName       = "GraftedChainLength"
+        nodeValue      = "{}".format(N)
 
-        return self.addParameterSimulationRunGeneral(nodeNameSimRun, nodeNameGraftedChainLength, nodeValueGraftedChainLength)
+        return self.addParameterSimulationRunGeneral(nodeNameSimRun, nodeName, nodeValue)
 
     def addDendrimerGenerationToSimulationRun(self, simulationRunName, G):
         '''Connect a SimulationRun node with a Parameter node of name DendrimerGeneration with the given value.
@@ -596,11 +612,11 @@ class neo2BFMPolymer:
             exit code (bool): True if connection was added, False if connection already exists
                               or SimulationRun node does not exist
         '''
-        nodeNameSimRun           = simulationRunName
-        nodeNameDendrGeneration  = "DendrimerGeneration"
-        nodeValueDendrGeneration = "{}".format(G)
+        nodeNameSimRun = simulationRunName
+        nodeName       = "DendrimerGeneration"
+        nodeValue      = "{}".format(G)
 
-        return self.addParameterSimulationRunGeneral(nodeNameSimRun, nodeNameDendrGeneration, nodeValueDendrGeneration)
+        return self.addParameterSimulationRunGeneral(nodeNameSimRun, nodeName, nodeValue)
 
     def addDendrimerSpacerLengthToSimulationRun(self, simulationRunName, S):
         '''Connect a SimulationRun node with a Parameter node of name DendrimerSpacerLength with the given value.
@@ -617,11 +633,11 @@ class neo2BFMPolymer:
             exit code (bool): True if connection was added, False if connection already exists
                               or SimulationRun node does not exist
         '''
-        nodeNameSimRun       = simulationRunName
-        nodeNameDendrSpacer  = "DendrimerSpacerLength"
-        nodeValueDendrSpacer = "{}".format(S)
+        nodeNameSimRun = simulationRunName
+        nodeName       = "DendrimerSpacerLength"
+        nodeValue      = "{}".format(S)
 
-        return self.addParameterSimulationRunGeneral(nodeNameSimRun, nodeNameDendrSpacer, nodeValueDendrSpacer)
+        return self.addParameterSimulationRunGeneral(nodeNameSimRun, nodeName, nodeValue)
 
     def addTotalNumberOfMonomersToSimulationRun(self, simulationRunName, N):
         '''Connect a SimulationRun node with a Parameter node of name TotalNumberOfMonomers with the given value.
@@ -638,18 +654,183 @@ class neo2BFMPolymer:
             exit code (bool): True if connection was added, False if connection already exists
                               or SimulationRun node does not exist
         '''
-        nodeNameSimRun       = simulationRunName
-        nodeNameNumOfMonos  = "TotalNumberOfMonomers"
-        nodeValueNumOfMonos = "{}".format(N)
+        nodeNameSimRun = simulationRunName
+        nodeName       = "TotalNumberOfMonomers"
+        nodeValue      = "{}".format(N)
 
-        return self.addParameterSimulationRunGeneral(nodeNameSimRun, nodeNameNumOfMonos, nodeValueNumOfMonos)
+        return self.addParameterSimulationRunGeneral(nodeNameSimRun, nodeName, nodeValue)
+
+    def addNumberOfRingsToSimulationRun(self, simulationRunName, nRings):
+        '''Connect a SimulationRun node with a Parameter node of name NumberOfRings with the given value.
+
+        A parameter node with name NumberOfRings contains a value nRings
+        that can be connected to any SimulationRun node that uses this parameter.
+        If the NumberOfRings node does not exist, it is created and then connected to the SimulationRun.
+
+        Parameters:
+            simulationRunName (str): name of the SimulationRun node
+            nRings (int): total number of BFM units in the ring polymer
+
+        Returns:
+            exit code (bool): True if connection was added, False if connection already exists
+                              or SimulationRun node does not exist
+        '''
+        nodeNameSimRun = simulationRunName
+        nodeName       = "NumberOfRings"
+        nodeValue      = "{}".format(int(nRings))
+
+        return self.addParameterSimulationRunGeneral(nodeNameSimRun, nodeName, nodeValue)
+
+    def addNumberOfMonomersInRingToSimulationRun(self, simulationRunName, nMonosRing):
+        '''Connect a SimulationRun node with a Parameter node of name NumberOfMonomersInRing with the given value.
+
+        A parameter node with name NumberOfMonomersInRing contains a value nMonosRing
+        that can be connected to any SimulationRun node that uses this parameter.
+        If the NumberOfMonomersInRing node does not exist, it is created and then connected to the SimulationRun.
+
+        Parameters:
+            simulationRunName (str): name of the SimulationRun node
+            nMonosRing (int): total number of BFM units in the ring polymer
+
+        Returns:
+            exit code (bool): True if connection was added, False if connection already exists
+                              or SimulationRun node does not exist
+        '''
+        nodeNameSimRun = simulationRunName
+        nodeName       = "NumberOfMonomersInRing"
+        nodeValue      = "{}".format(int(nMonosRing))
+
+        return self.addParameterSimulationRunGeneral(nodeNameSimRun, nodeName, nodeValue)
+
+    def addNumberOfTendomersToSimulationRun(self, simulationRunName, nTendomers):
+        '''Connect a SimulationRun node with a Parameter node of name NumberOfTendomers with the given value.
+
+        A parameter node with name NumberOfTendomers contains a value nTendomers
+        that can be connected to any SimulationRun node that uses this parameter.
+        If the NumberOfTendomers node does not exist, it is created and then connected to the SimulationRun.
+
+        Parameters:
+            simulationRunName (str): name of the SimulationRun node
+            nTendomers (int): number of tendomers in simulation box
+
+        Returns:
+            exit code (bool): True if connection was added, False if connection already exists
+                              or SimulationRun node does not exist
+        '''
+        nodeNameSimRun = simulationRunName
+        nodeName       = "NumberOfTendomers"
+        nodeValue      = "{}".format(int(nTendomers))
+
+        return self.addParameterSimulationRunGeneral(nodeNameSimRun, nodeName, nodeValue)
+
+    def addNumberOfCrosslinkersToSimulationRun(self, simulationRunName, nCrossLinker):
+        '''Connect a SimulationRun node with a Parameter node of name NumberOfCrosslinkers with the given value.
+
+        A parameter node with name NumberOfCrosslinkers contains a value nCrossLinker
+        that can be connected to any SimulationRun node that uses this parameter.
+        If the NumberOfCrosslinkers node does not exist, it is created and then connected to the SimulationRun.
+
+        Parameters:
+            simulationRunName (str): name of the SimulationRun node
+            nCrossLinker (int): number of crosslinkers in tendomer system
+
+        Returns:
+            exit code (bool): True if connection was added, False if connection already exists
+                              or SimulationRun node does not exist
+        '''
+        nodeNameSimRun = simulationRunName
+        nodeName       = "NumberOfCrosslinkers"
+        nodeValue      = "{}".format(int(nCrossLinker))
+
+        return self.addParameterSimulationRunGeneral(nodeNameSimRun, nodeName, nodeValue)
+
+    def addNumberOfLabelsPerArmToSimulationRun(self, simulationRunName, nLabels):
+        '''Connect a SimulationRun node with a Parameter node of name NumberOfLabelsPerArm with the given value.
+
+        A parameter node with name NumberOfLabelsPerArm contains a value nLabels
+        that can be connected to any SimulationRun node that uses this parameter.
+        If the NumberOfLabelsPerArm node does not exist, it is created and then connected to the SimulationRun.
+
+        Parameters:
+            simulationRunName (str): name of the SimulationRun node
+            nLabels (int): number of labels per tendomer arm
+
+        Returns:
+            exit code (bool): True if connection was added, False if connection already exists
+                              or SimulationRun node does not exist
+        '''
+        nodeNameSimRun = simulationRunName
+        nodeName       = "NumberOfLabelsPerArm"
+        nodeValue      = "{}".format(int(nLabels))
+
+        return self.addParameterSimulationRunGeneral(nodeNameSimRun, nodeName, nodeValue)
+
+    def addNumberOfMonomersPerChainToSimulationRun(self, simulationRunName, nMonoPerChain):
+        '''Connect a SimulationRun node with a Parameter node of name NumberOfMonomersPerChain with the given value.
+
+        A parameter node with name NumberOfMonomersPerChain contains a value nMonoPerChain
+        that can be connected to any SimulationRun node that uses this parameter.
+        If the NumberOfMonomersPerChain node does not exist, it is created and then connected to the SimulationRun.
+
+        Parameters:
+            simulationRunName (str): name of the SimulationRun node
+            nMonoPerChain (int): number of monomers per chain in tendomer system
+
+        Returns:
+            exit code (bool): True if connection was added, False if connection already exists
+                              or SimulationRun node does not exist
+        '''
+        nodeNameSimRun = simulationRunName
+        nodeName       = "NumberOfMonomersPerChain"
+        nodeValue      = "{}".format(int(nMonoPerChain))
+
+        return self.addParameterSimulationRunGeneral(nodeNameSimRun, nodeName, nodeValue)
+
+    def addSpringConstantToSimulationRun(self, simulationRunName, springConst):
+        '''Connect a SimulationRun node with a Parameter node of name NumberOfMonomersPerChain with the given value.
+
+        A parameter node with name NumberOfMonomersPerChain contains a value springConst
+        that can be connected to any SimulationRun node that uses this parameter.
+        If the NumberOfMonomersPerChain node does not exist, it is created and then connected to the SimulationRun.
+
+        Parameters:
+            simulationRunName (str): name of the SimulationRun node
+            springConst (float): spring constant k of harmonic spring potential
+
+        Returns:
+            exit code (bool): True if connection was added, False if connection already exists
+                              or SimulationRun node does not exist
+        '''
+        nodeNameSimRun = simulationRunName
+        nodeName       = "NumberOfMonomersPerChain"
+        nodeValue      = self._float_prec3_format(springConst)
+
+        return self.addParameterSimulationRunGeneral(nodeNameSimRun, nodeName, nodeValue)
+
+    def addSpringLengthToSimulationRun(self, simulationRunName, springLength):
+        '''Connect a SimulationRun node with a Parameter node of name SpringLength with the given value.
+
+        A parameter node with name SpringLength contains a value springLength
+        that can be connected to any SimulationRun node that uses this parameter.
+        If the SpringLength node does not exist, it is created and then connected to the SimulationRun.
+
+        Parameters:
+            simulationRunName (str): name of the SimulationRun node
+            springLength (float): equilibrium length r0 of harmonic spring potential
+
+        Returns:
+            exit code (bool): True if connection was added, False if connection already exists
+                              or SimulationRun node does not exist
+        '''
+        nodeNameSimRun = simulationRunName
+        nodeName       = "SpringLength"
+        nodeValue      = self._float_prec3_format(springLength)
+
+        return self.addParameterSimulationRunGeneral(nodeNameSimRun, nodeName, nodeValue)
 
     # ## -------------- # ## -------------- # ## -------------- ###
     # ## --------------   add result functions  ------------- ###
     # ## -------------- # ## -------------- # ## -------------- ###
-    def _numericalResult_4digits_format(self, result):
-        '''reduce float precision to 4 digits formated as a string'''
-        return "{:.4f}".format(result)
 
     def addResultRadiusOfGyration(self, simulationRunName, Rg):
         '''Adding a Result node with a single value or an array of the radius of gyration of a particular SimulationRun.
@@ -663,10 +844,10 @@ class neo2BFMPolymer:
                               or SimulationRun node does not exist
         '''
         nodeNameSimRun = simulationRunName
-        nodeNameRg     = "RadiusOfGyration"
-        nodeValueRg    = str(Rg)  # this needs to be improved!
+        nodeName       = "RadiusOfGyration"
+        nodeValue      = str(Rg)  # this needs to be improved!
 
-        return self.addResultSimulationRunGeneral(nodeNameSimRun, nodeNameRg, nodeValueRg)
+        return self.addResultSimulationRunGeneral(nodeNameSimRun, nodeName, nodeValue)
 
     def addResultAsphericity(self, simulationRunName, A):
         '''Adding a Result node with a single value or an array of the asphericity of a particular SimulationRun.
@@ -680,10 +861,10 @@ class neo2BFMPolymer:
                               or SimulationRun node does not exist
         '''
         nodeNameSimRun = simulationRunName
-        nodeNameA     = "Asphericity"
-        nodeValueA    = str(A)  # this needs to be improved!
+        nodeName       = "Asphericity"
+        nodeValue      = str(A)  # this needs to be improved!
 
-        return self.addResultSimulationRunGeneral(nodeNameSimRun, nodeNameA, nodeValueA)
+        return self.addResultSimulationRunGeneral(nodeNameSimRun, nodeName, nodeValue)
 
     def addResultCenterToCenterDistribution(self, simulationRunName, c2c):
         '''Adding a Result node with an array of the center to center distances of a particular SimulationRun.
@@ -697,10 +878,10 @@ class neo2BFMPolymer:
                               or SimulationRun node does not exist
         '''
         nodeNameSimRun = simulationRunName
-        nodeNameC2C    = "c2cDistribution"
-        nodeValueC2C   = str(c2c)  # this needs to be improved!
+        nodeName       = "c2cDistribution"
+        nodeValue      = str(c2c)  # this needs to be improved!
 
-        return self.addResultSimulationRunGeneral(nodeNameSimRun, nodeNameC2C, nodeValueC2C)
+        return self.addResultSimulationRunGeneral(nodeNameSimRun, nodeName, nodeValue)
 
     # ## -------------- # ## -------------- # ## -------------- ###
     # ## ----------   complex functions with helpers  --------- ###
@@ -766,7 +947,12 @@ class neo2BFMPolymer:
 
         # ## ---------  features  --------- ###
         featureKey = "feature_name"
-        featureList = self._findElementInKeyValueDataList(featureKey, dataArray)
+
+        featureList_full = self._findElementInKeyValueDataList(featureKey, dataArray)
+        # TODO: consider cases where parameter list might be usefull?
+        # TODO: feature name is formatted again in the addFeatureToSimulationRun for robustness, usefull?
+        featureList = [self._featureName_format(f) for f in featureList_full]
+        
         if(featureList is not None):
             for feature in featureList:
                 self.addFeatureToSimulationRun(simulationRunName, feature)
@@ -874,6 +1060,81 @@ class neo2BFMPolymer:
                             self.connectParameterToFeatureGeneral(featureName, parameterName, parameterValue)
         # ## ------- FeatureNNInteractionBcc ---------- ###
         
+        # ## -----  FeatureSystemInformationRingMelt ------ ## #
+        featureName = "FeatureSystemInformationRingMelt"
+        if (featureName in featureList):
+            numOfRingsKey = "number_of_rings"
+            numOfRings = self._findElementInKeyValueDataList(numOfRingsKey, dataArray)
+            if (numOfRings is not None):
+                parameterName = "NumberOfRings"
+                parameterValue = numOfRings[0]
+                self.addNumberOfRingsToSimulationRun(simulationRunName,parameterValue)
+                self.connectParameterToFeatureGeneral(featureName, parameterName, parameterValue)
+
+            numOfMonomersInRingKey = "number_of_monomers_per_ring"
+            numOfMonomersInRing = self._findElementInKeyValueDataList(numOfMonomersInRingKey, dataArray)
+            if (numOfMonomersInRing is not None):
+                parameterName = "NumberOfMonomersInRing"
+                parameterValue = numOfMonomersInRing[0]
+                self.addNumberOfMonomersInRingToSimulationRun(simulationRunName,parameterValue)
+                self.connectParameterToFeatureGeneral(featureName, parameterName, parameterValue)
+        # ## -----  FeatureSystemInformationRingMelt ------ ## #
+
+        # ## -----  FeatureSystemInformationTendomer ------ ## #
+        featureName = "FeatureSystemInformationTendomer"
+        if (featureName in featureList):
+            numOfTendomersKey = "number_of_tendomers"
+            numOfTendomers = self._findElementInKeyValueDataList(numOfTendomersKey, dataArray)
+            if (numOfTendomers is not None):
+                parameterName = "NumberOfTendomers"
+                parameterValue = numOfTendomers[0]
+                self.addNumberOfTendomersToSimulationRun(simulationRunName,parameterValue)
+                self.connectParameterToFeatureGeneral(featureName, parameterName, parameterValue)
+
+            numOfCrosslinkersKey = "number_of_crosslinkers"
+            numOfCrosslinkers = self._findElementInKeyValueDataList(numOfCrosslinkersKey, dataArray)
+            if (numOfCrosslinkers is not None):
+                parameterName = "NumberOfCrosslinkers"
+                parameterValue = numOfCrosslinkers[0]
+                self.addNumberOfCrosslinkersToSimulationRun(simulationRunName,parameterValue)
+                self.connectParameterToFeatureGeneral(featureName, parameterName, parameterValue)
+
+            numOfLabelsPerArmKey = "number_of_labels_per_arm"
+            numOfLabelsPerArm = self._findElementInKeyValueDataList(numOfLabelsPerArmKey, dataArray)
+            if (numOfLabelsPerArm is not None):
+                parameterName = "NumberOfLabelsPerArm"
+                parameterValue = numOfLabelsPerArm[0]
+                self.addNumberOfLabelsPerArmToSimulationRun(simulationRunName,parameterValue)
+                self.connectParameterToFeatureGeneral(featureName, parameterName, parameterValue)
+
+            numOfMonomersPerChainKey = "number_of_monomers_per_chain"
+            numOfMonomersPerChain = self._findElementInKeyValueDataList(numOfMonomersPerChainKey, dataArray)
+            if (numOfMonomersPerChain is not None):
+                parameterName = "NumberOfMonomersPerChain"
+                parameterValue = numOfMonomersPerChain[0]
+                self.addNumberOfMonomersPerChainToSimulationRun(simulationRunName,parameterValue)
+                self.connectParameterToFeatureGeneral(featureName, parameterName, parameterValue)
+        # ## -----  FeatureSystemInformationTendomer ------ ## #
+
+        # ## -----  FeatureSpringPotentialTwoGroups ------ ## #
+        featureName = "FeatureSpringPotentialTwoGroups"
+        if (featureName in featureList):
+            springConstKey = "spring_potential_constant"
+            springConst = self._findElementInKeyValueDataList(springConstKey, dataArray)
+            if (springConst is not None):
+                parameterName = "SpringConstant"
+                parameterValue = springConst[0]
+                self.addSpringConstantToSimulationRun(simulationRunName,parameterValue)
+                self.connectParameterToFeatureGeneral(featureName, parameterName, parameterValue)
+
+            springLengthKey = "spring_potential_length"
+            springLength = self._findElementInKeyValueDataList(springLengthKey, dataArray)
+            if (springLength is not None):
+                parameterName = "SpringLengths"
+                parameterValue = springLength[0]
+                self.addSpringLengthToSimulationRun(simulationRunName,parameterValue)
+                self.connectParameterToFeatureGeneral(featureName, parameterName, parameterValue)
+        # ## -----  FeatureSpringPotentialTwoGroups ------ ## #
 
         # finally return True if no errors occurred
         return True
@@ -943,9 +1204,9 @@ class neo2BFMPolymer:
         totalMolecule_rgSquared = self._findElementInKeyValueDataList(totalMolecule_rgSquaredKey, dataArray)
         if((dendrimer_rgSquared is not None) and (graftedChains_rgSquared is not None) and (totalMolecule_rgSquared is not None)):
             formatedRgString = "[[{},{}],[{},{}],[{},{}]]".format(
-                "Rg^2 total codendrimer", self._numericalResult_4digits_format(float(totalMolecule_rgSquared[0])),
-                "Rg^2 dendritic core", self._numericalResult_4digits_format(float(dendrimer_rgSquared[0])),
-                "Rg^2 grafted chains", self._numericalResult_4digits_format(float(graftedChains_rgSquared[0]))
+                "Rg^2 total codendrimer", self._float_prec4_format(float(totalMolecule_rgSquared[0])),
+                "Rg^2 dendritic core", self._float_prec4_format(float(dendrimer_rgSquared[0])),
+                "Rg^2 grafted chains", self._float_prec4_format(float(graftedChains_rgSquared[0]))
             )
             self.addResultRadiusOfGyration(simulationRunName, formatedRgString)
         # ## ---------  radius of gyration squared   --------- ###
@@ -959,9 +1220,9 @@ class neo2BFMPolymer:
         totalMolecule_asphericity = self._findElementInKeyValueDataList(totalMolecule_asphericityKey, dataArray)
         if((dendrimer_asphericity is not None) and (graftedChains_asphericity is not None) and (totalMolecule_asphericity is not None)):
             formatedAString = "[[{},{}],[{},{}],[{},{}]]".format(
-                "<A> total codendrimer", self._numericalResult_4digits_format(float(totalMolecule_asphericity[0])),
-                "<A> dendritic core", self._numericalResult_4digits_format(float(dendrimer_asphericity[0])),
-                "<A> grafted chains", self._numericalResult_4digits_format(float(graftedChains_asphericity[0]))
+                "<A> total codendrimer", self._float_prec4_format(float(totalMolecule_asphericity[0])),
+                "<A> dendritic core", self._float_prec4_format(float(dendrimer_asphericity[0])),
+                "<A> grafted chains", self._float_prec4_format(float(graftedChains_asphericity[0]))
             )
             self.addResultAsphericity(simulationRunName, formatedAString)
         # ## ---------  Asphericity   --------- ###
