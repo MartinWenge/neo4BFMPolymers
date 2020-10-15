@@ -771,85 +771,109 @@ class neo2BFMPolymer:
             for feature in featureList:
                 self.addFeatureToSimulationRun(simulationRunName, feature)
         # ## ---------  features  --------- ###
+        breakpoint()
 
-        # ## ---------  total number of monomers  --------- ###
-        numOfMonomersKey = "number_of_monomers"
-        numOfMonomers = self._findElementInKeyValueDataList(numOfMonomersKey, dataArray)
-        if(numOfMonomers is not None):
-            self.addTotalNumberOfMonomersToSimulationRun(simulationRunName, int(numOfMonomers[0]))
-        # ## ---------  total number of monomers  --------- ###
+        ### collect information from all available features
+        # ## ------- FeatureMoleculesIO ## #
+        featureName="FeatureMoleculesIO"
+        if (featureName in featureList):
+            numOfMonomersKey = "number_of_monomers"
+            numOfMonomers = self._findElementInKeyValueDataList(numOfMonomersKey, dataArray)
+            if(numOfMonomers is not None):
+                self.addTotalNumberOfMonomersToSimulationRun(simulationRunName, int(numOfMonomers[0]))
 
-        # ## ---------  boxsize  ---------- ###
-        boxSizeKeyX = "box_x"
-        boxSizeX = (self._findElementInKeyValueDataList(boxSizeKeyX, dataArray))[0]
+            #other keys provided: !bonds, !add_bonds, !remove_bonds, !mcs
+        # ## ------- FeatureMoleculesIO ## #
 
-        boxSizeKeyY = "box_y"
-        boxSizeY = (self._findElementInKeyValueDataList(boxSizeKeyY, dataArray))[0]
+        # ## ------- FeatureMoleculesIOUnsaveCheck ## #
+        featureName="FeatureMoleculesIOUnsaveCheck"
+        if (featureName in featureList):
+            numOfMonomersKey = "number_of_monomers"
+            numOfMonomers = self._findElementInKeyValueDataList(numOfMonomersKey, dataArray)
+            if(numOfMonomers is not None):
+                self.addTotalNumberOfMonomersToSimulationRun(simulationRunName, int(numOfMonomers[0]))
 
-        boxSizeKeyZ = "box_z"
-        boxSizeZ = (self._findElementInKeyValueDataList(boxSizeKeyZ, dataArray))[0]
+            #other keys provided: !bonds, !add_bonds, !remove_bonds, !mcs
+        # ## ------- FeatureMoleculesIOUnsaveCheck ## #
 
-        # sanity check: box size should be defined for all dimensions
-        if ((boxSizeX is None) or (boxSizeX is None) or (boxSizeX is None)):
-            print("WARNING: boxsize is not defined for all dimensions. Box Size node is NOT added")
-        else:
-            self.addBoxSizeToSimulationRun(simulationRunName, boxSizeX, boxSizeY, boxSizeZ)
-            featureName = "FeatureBox"
-            if (featureName in featureList):
+        # ## ------- FeatureBox ---------- ###
+        featureName="FeatureBox"
+        if (featureName in featureList):
+            boxSizeKeyX = "box_x"
+            boxSizeX = (self._findElementInKeyValueDataList(boxSizeKeyX, dataArray))[0]
+
+            boxSizeKeyY = "box_y"
+            boxSizeY = (self._findElementInKeyValueDataList(boxSizeKeyY, dataArray))[0]
+
+            boxSizeKeyZ = "box_z"
+            boxSizeZ = (self._findElementInKeyValueDataList(boxSizeKeyZ, dataArray))[0]
+
+            # sanity check: box size should be defined for all dimensions
+            if ((boxSizeX is None) or (boxSizeX is None) or (boxSizeX is None)):
+                print("WARNING: boxsize is not defined for all dimensions. Box Size node is NOT added")
+            else:
+                self.addBoxSizeToSimulationRun(simulationRunName, boxSizeX, boxSizeY, boxSizeZ)
                 parameterName = "BoxSize"
                 parameterValue = "[{}, {}, {}]".format(boxSizeX, boxSizeY, boxSizeZ)
                 self.connectParameterToFeatureGeneral(featureName, parameterName, parameterValue)
-        # ## ---------  boxsize  ---------- ###
 
-        # ## -------  periodicity  -------- ###
-        periodicityKeyX = "periodic_x"
-        periodicityX = (self._findElementInKeyValueDataList(periodicityKeyX, dataArray))[0]
+            periodicityKeyX = "periodic_x"
+            periodicityX = (self._findElementInKeyValueDataList(periodicityKeyX, dataArray))[0]
 
-        periodicityKeyY = "periodic_y"
-        periodicityY = (self._findElementInKeyValueDataList(periodicityKeyY, dataArray))[0]
+            periodicityKeyY = "periodic_y"
+            periodicityY = (self._findElementInKeyValueDataList(periodicityKeyY, dataArray))[0]
 
-        periodicityKeyZ = "periodic_z"
-        periodicityZ = (self._findElementInKeyValueDataList(periodicityKeyZ, dataArray))[0]
+            periodicityKeyZ = "periodic_z"
+            periodicityZ = (self._findElementInKeyValueDataList(periodicityKeyZ, dataArray))[0]
 
-        # sanity check: periodicity should be defined for all dimensions
-        if ((periodicityX is None) or (periodicityY is None) or (periodicityZ is None)):
-            print("WARNING: periodicity is not defined for all dimensions. Periodicity node is NOT added")
-        else:
-            self.addPeriodicityToSimulationRun(simulationRunName, periodicityX, periodicityY, periodicityZ)
-            featureName = "FeatureBox"
-            if (featureName in featureList):
+            # sanity check: periodicity should be defined for all dimensions
+            if ((periodicityX is None) or (periodicityY is None) or (periodicityZ is None)):
+                print("WARNING: periodicity is not defined for all dimensions. Periodicity node is NOT added")
+            else:
+                self.addPeriodicityToSimulationRun(simulationRunName, periodicityX, periodicityY, periodicityZ)
                 parameterName = "Periodicity"
                 parameterValue = "[{0:d}, {1:d}, {2:d}]".format(int(periodicityX), int(periodicityY), int(periodicityZ))
                 self.connectParameterToFeatureGeneral(featureName, parameterName, parameterValue)
-        # ## -------  periodicity  -------- ###
+        # ## ------- FeatureBox ---------- ###
 
-        # ## -----  nn_interactions  ------ ###
-        nn_interactionKey = "nn_interaction"
-        nn_intertaction = self._findElementInKeyValueDataList(nn_interactionKey, dataArray)
-        my_nn_interaction = []
-        if(nn_intertaction is not None):
-            if(all(x == nn_intertaction[0] for x in nn_intertaction)):
-                self.addNNInteractionToSimulationRun(simulationRunName, nn_intertaction[0])
-                my_nn_interaction = [nn_intertaction[0]]
-            else:
-                print("WARNING: nn_interaction contains more than one value: {}\nTry to add all values, more Warnings may pop up".format(nn_intertaction))
-                for nn in nn_intertaction:
-                    if(self.addNNInteractionToSimulationRun(simulationRunName, nn)):
-                        my_nn_interaction.append(nn)
-
+        # ## ------- FeatureNNInteractionSc ---------- ###
         featureName = "FeatureNNInteractionSc"
-        # maybe other template versions of this feature may appear, for now this is sufficient...
         if (featureName in featureList):
+            nn_interactionKey = "nn_interaction"
+            nn_intertaction = self._findElementInKeyValueDataList(nn_interactionKey, dataArray)
             parameterName = "NNInteraction"
-            # check, if my_nn_interaction contains more than one element to avoid
-            if isinstance(my_nn_interaction, list):
-                for my_nn in my_nn_interaction:
-                    parameterValue = self._nnInteraction_format(my_nn)
-                    self.connectParameterToFeatureGeneral(featureName, parameterName, parameterValue)
-            else:
-                parameterValue = self._nnInteraction_format(my_nn_interaction)
-                self.connectParameterToFeatureGeneral(featureName, parameterName, parameterValue)
-        # ## -----  nn_interactions  ------ ###
+            if(nn_intertaction is not None):
+                if(all(x == nn_intertaction[0] for x in nn_intertaction)):
+                    parameterValue = nn_intertaction[0]
+                    if(self.addNNInteractionToSimulationRun(simulationRunName, parameterValue)):
+                        self.connectParameterToFeatureGeneral(featureName, parameterName, parameterValue)
+                else:
+                    print("WARNING: nn_interaction contains more than one value: {}\nTry to add all values, more Warnings may pop up".format(nn_intertaction))
+                    for nn in nn_intertaction:
+                        parameterValue = nn
+                        if(self.addNNInteractionToSimulationRun(simulationRunName, parameterValue)):
+                            self.connectParameterToFeatureGeneral(featureName, parameterName, parameterValue)
+        # ## ------- FeatureNNInteractionSc ---------- ###
+
+        # ## ------- FeatureNNInteractionBcc ---------- ###
+        featureName = "FeatureNNInteractionBcc"
+        if (featureName in featureList):
+            nn_interactionKey = "nn_interaction"
+            nn_intertaction = self._findElementInKeyValueDataList(nn_interactionKey, dataArray)
+            parameterName = "NNInteraction"
+            if(nn_intertaction is not None):
+                if(all(x == nn_intertaction[0] for x in nn_intertaction)):
+                    parameterValue = nn_intertaction[0]
+                    if(self.addNNInteractionToSimulationRun(simulationRunName, parameterValue)):
+                        self.connectParameterToFeatureGeneral(featureName, parameterName, parameterValue)
+                else:
+                    print("WARNING: nn_interaction contains more than one value: {}\nTry to add all values, more Warnings may pop up".format(nn_intertaction))
+                    for nn in nn_intertaction:
+                        parameterValue = nn
+                        if(self.addNNInteractionToSimulationRun(simulationRunName, parameterValue)):
+                            self.connectParameterToFeatureGeneral(featureName, parameterName, parameterValue)
+        # ## ------- FeatureNNInteractionBcc ---------- ###
+        
 
         # finally return True if no errors occurred
         return True
