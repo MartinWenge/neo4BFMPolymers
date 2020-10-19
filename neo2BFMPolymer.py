@@ -639,6 +639,48 @@ class neo2BFMPolymer:
 
         return self.addParameterSimulationRunGeneral(nodeNameSimRun, nodeName, nodeValue)
 
+    def addDendrimerCoreFunctionalityToSimulationRun(self, simulationRunName, Fc):
+        '''Connect a SimulationRun node with a Parameter node of name DendrimerCoreFunctionality with the given value.
+
+        A parameter node with name DendrimerCoreFunctionality contains a value Fc
+        that can be connected to any SimulationRun node that uses this parameter.
+        If the DendrimerCoreFunctionality node does not exist, it is created and then connected to the SimulationRun.
+
+        Parameters:
+            simulationRunName (str): name of the SimulationRun node
+            Fc (int): number of connections of the dendrimer core monomer (focal point)
+
+        Returns:
+            exit code (bool): True if connection was added, False if connection already exists
+                              or SimulationRun node does not exist
+        '''
+        nodeNameSimRun = simulationRunName
+        nodeName       = "DendrimerCoreFunctionality"
+        nodeValue      = "{}".format(Fc)
+
+        return self.addParameterSimulationRunGeneral(nodeNameSimRun, nodeName, nodeValue)
+
+    def addDendrimerBranchingPointFunctionalityToSimulationRun(self, simulationRunName, Fb):
+        '''Connect a SimulationRun node with a Parameter node of name DendrimerBranchingPointFunctionality with the given value.
+
+        A parameter node with name DendrimerBranchingPointFunctionality contains a value Fb
+        that can be connected to any SimulationRun node that uses this parameter.
+        If the DendrimerBranchingPointFunctionality node does not exist, it is created and then connected to the SimulationRun.
+
+        Parameters:
+            simulationRunName (str): name of the SimulationRun node
+            Fb (int): number of connections of the dendrimer branching points (except the focal point)
+
+        Returns:
+            exit code (bool): True if connection was added, False if connection already exists
+                              or SimulationRun node does not exist
+        '''
+        nodeNameSimRun = simulationRunName
+        nodeName       = "DendrimerBranchingPointFunctionality"
+        nodeValue      = "{}".format(Fb)
+
+        return self.addParameterSimulationRunGeneral(nodeNameSimRun, nodeName, nodeValue)
+
     def addTotalNumberOfMonomersToSimulationRun(self, simulationRunName, N):
         '''Connect a SimulationRun node with a Parameter node of name TotalNumberOfMonomers with the given value.
 
@@ -802,7 +844,7 @@ class neo2BFMPolymer:
                               or SimulationRun node does not exist
         '''
         nodeNameSimRun = simulationRunName
-        nodeName       = "NumberOfMonomersPerChain"
+        nodeName       = "SpringConstant"
         nodeValue      = self._float_prec3_format(springConst)
 
         return self.addParameterSimulationRunGeneral(nodeNameSimRun, nodeName, nodeValue)
@@ -957,7 +999,6 @@ class neo2BFMPolymer:
             for feature in featureList:
                 self.addFeatureToSimulationRun(simulationRunName, feature)
         # ## ---------  features  --------- ###
-        breakpoint()
 
         ### collect information from all available features
         # ## ------- FeatureMoleculesIO ## #
@@ -1022,6 +1063,26 @@ class neo2BFMPolymer:
                 self.connectParameterToFeatureGeneral(featureName, parameterName, parameterValue)
         # ## ------- FeatureBox ---------- ###
 
+        # ## ------- FeatureNNInteraction ---------- ###
+        featureName = "FeatureNNInteraction"
+        # TODO: this feature is deprecated, should be noted somewhere
+        if (featureName in featureList):
+            nn_interactionKey = "nn_interaction"
+            nn_intertaction = self._findElementInKeyValueDataList(nn_interactionKey, dataArray)
+            parameterName = "NNInteraction"
+            if(nn_intertaction is not None):
+                if(all(x == nn_intertaction[0] for x in nn_intertaction)):
+                    parameterValue = self._float_prec3_format(nn_intertaction[0])
+                    if(self.addNNInteractionToSimulationRun(simulationRunName, parameterValue)):
+                        self.connectParameterToFeatureGeneral(featureName, parameterName, parameterValue)
+                else:
+                    print("WARNING: nn_interaction contains more than one value: {}\nTry to add all values, more Warnings may pop up".format(nn_intertaction))
+                    for nn in nn_intertaction:
+                        parameterValue = self._float_prec3_format(nn)
+                        if(self.addNNInteractionToSimulationRun(simulationRunName, parameterValue)):
+                            self.connectParameterToFeatureGeneral(featureName, parameterName, parameterValue)
+        # ## ------- FeatureNNInteraction ---------- ###
+
         # ## ------- FeatureNNInteractionSc ---------- ###
         featureName = "FeatureNNInteractionSc"
         if (featureName in featureList):
@@ -1030,13 +1091,13 @@ class neo2BFMPolymer:
             parameterName = "NNInteraction"
             if(nn_intertaction is not None):
                 if(all(x == nn_intertaction[0] for x in nn_intertaction)):
-                    parameterValue = nn_intertaction[0]
+                    parameterValue = self._float_prec3_format(nn_intertaction[0])
                     if(self.addNNInteractionToSimulationRun(simulationRunName, parameterValue)):
                         self.connectParameterToFeatureGeneral(featureName, parameterName, parameterValue)
                 else:
                     print("WARNING: nn_interaction contains more than one value: {}\nTry to add all values, more Warnings may pop up".format(nn_intertaction))
                     for nn in nn_intertaction:
-                        parameterValue = nn
+                        parameterValue = self._float_prec3_format(nn)
                         if(self.addNNInteractionToSimulationRun(simulationRunName, parameterValue)):
                             self.connectParameterToFeatureGeneral(featureName, parameterName, parameterValue)
         # ## ------- FeatureNNInteractionSc ---------- ###
@@ -1116,6 +1177,42 @@ class neo2BFMPolymer:
                 self.connectParameterToFeatureGeneral(featureName, parameterName, parameterValue)
         # ## -----  FeatureSystemInformationTendomer ------ ## #
 
+        # ## -----  FeatureSystemInformationDendrimer ------ ## #
+        featureName = "FeatureSystemInformationDendrimer"
+        if (featureName in featureList):
+            generationKey = "dendrimer_generation"
+            generation = self._findElementInKeyValueDataList(generationKey, dataArray)
+            if (generation is not None):
+                parameterName = "DendrimerGeneration"
+                parameterValue = generation[0]
+                self.addDendrimerGenerationToSimulationRun(simulationRunName,parameterValue)
+                self.connectParameterToFeatureGeneral(featureName, parameterName, parameterValue)
+
+            spacerLengthKey = "dendrimer_spacer_length"
+            spacerLength = self._findElementInKeyValueDataList(spacerLengthKey, dataArray)
+            if (spacerLength is not None):
+                parameterName = "DendrimerSpacerLength"
+                parameterValue = spacerLength[0]
+                self.addDendrimerSpacerLengthToSimulationRun(simulationRunName,parameterValue)
+                self.connectParameterToFeatureGeneral(featureName, parameterName, parameterValue)
+
+            coreFunctionalityKey = "dendrimer_core_functionality"
+            coreFunctionality = self._findElementInKeyValueDataList(coreFunctionalityKey, dataArray)
+            if (coreFunctionality is not None):
+                parameterName = "DendrimerCoreFunctionality"
+                parameterValue = coreFunctionality[0]
+                self.addDendrimerCoreFunctionalityToSimulationRun(simulationRunName,parameterValue)
+                self.connectParameterToFeatureGeneral(featureName, parameterName, parameterValue)
+
+            branchingPointFunctionalityKey = "dendrimer_branching_point_functionality"
+            branchingPointFunctionality = self._findElementInKeyValueDataList(branchingPointFunctionalityKey, dataArray)
+            if (branchingPointFunctionality is not None):
+                parameterName = "DendrimerBranchingPointFunctionality"
+                parameterValue = branchingPointFunctionality[0]
+                self.addDendrimerBranchingPointFunctionalityToSimulationRun(simulationRunName,parameterValue)
+                self.connectParameterToFeatureGeneral(featureName, parameterName, parameterValue)
+        # ## -----  FeatureSystemInformationDendrimer ------ ## #
+
         # ## -----  FeatureSpringPotentialTwoGroups ------ ## #
         featureName = "FeatureSpringPotentialTwoGroups"
         if (featureName in featureList):
@@ -1123,18 +1220,40 @@ class neo2BFMPolymer:
             springConst = self._findElementInKeyValueDataList(springConstKey, dataArray)
             if (springConst is not None):
                 parameterName = "SpringConstant"
-                parameterValue = springConst[0]
+                parameterValue = self._float_prec3_format(springConst[0])
                 self.addSpringConstantToSimulationRun(simulationRunName,parameterValue)
                 self.connectParameterToFeatureGeneral(featureName, parameterName, parameterValue)
 
             springLengthKey = "spring_potential_length"
             springLength = self._findElementInKeyValueDataList(springLengthKey, dataArray)
             if (springLength is not None):
-                parameterName = "SpringLengths"
-                parameterValue = springLength[0]
+                parameterName = "SpringLength"
+                parameterValue = self._float_prec3_format(springLength[0])
                 self.addSpringLengthToSimulationRun(simulationRunName,parameterValue)
                 self.connectParameterToFeatureGeneral(featureName, parameterName, parameterValue)
         # ## -----  FeatureSpringPotentialTwoGroups ------ ## #
+
+        # ## -----  FeatureVirtualSpringTwoObjects ------ ## #
+        # TODO: this feature is deprecated, should be noted somewhere
+        featureName = "FeatureVirtualSpringTwoObjects"
+        if (featureName in featureList):
+            springConstKey = "virtual_spring_constant"
+            springConst = self._findElementInKeyValueDataList(springConstKey, dataArray)
+            if (springConst is not None):
+                parameterName = "SpringConstant"
+                parameterValue = self._float_prec3_format(springConst[0])
+                self.addSpringConstantToSimulationRun(simulationRunName,parameterValue)
+                self.connectParameterToFeatureGeneral(featureName, parameterName, parameterValue)
+
+            springLengthKey = "virtual_spring_length"
+            springLength = self._findElementInKeyValueDataList(springLengthKey, dataArray)
+            if (springLength is not None):
+                parameterName = "SpringLength"
+                parameterValue = self._float_prec3_format(springLength[0])
+                self.addSpringLengthToSimulationRun(simulationRunName,parameterValue)
+                self.connectParameterToFeatureGeneral(featureName, parameterName, parameterValue)
+        # ## -----  FeatureVirtualSpringTwoObjects ------ ## #
+
 
         # finally return True if no errors occurred
         return True

@@ -29,12 +29,18 @@ class neo4Polymer_BFM_fileparser:
             'feature_name': re.compile(r'# Feature(?P<feature_name>.*)\n'),
             'number_of_rings': re.compile(r'#!number_of_rings=(?P<number_of_rings>\d+)\n'),
             'number_of_monomers_per_ring': re.compile(r'#!number_of_monomers_per_ring=(?P<number_of_monomers_per_ring>\d+)\n'),
+            'dendrimer_generation': re.compile(r'#!dendrimer_generation=(?P<dendrimer_generation>\d+)\n'),
+            'dendrimer_spacer_length': re.compile(r'#!dendrimer_spacer_length=(?P<dendrimer_spacer_length>\d+)\n'),
+            'dendrimer_core_functionality': re.compile(r'#!dendrimer_core_functionality=(?P<dendrimer_core_functionality>\d+)\n'),
+            'dendrimer_branching_point_functionality': re.compile(r'#!dendrimer_branching_point_functionality=(?P<dendrimer_branching_point_functionality>\d+)\n'),
             'number_of_tendomers': re.compile(r'#!number_of_tendomers=(?P<number_of_tendomers>\d+)\n'),
             'number_of_crosslinkers': re.compile(r'#!number_of_crosslinkers=(?P<number_of_crosslinkers>\d+)\n'),
             'number_of_labels_per_arm': re.compile(r'#!number_of_labels_per_arm=(?P<number_of_labels_per_arm>\d+)\n'),
             'number_of_monomers_per_chain': re.compile(r'#!number_of_monomers_per_chain=(?P<number_of_monomers_per_chain>\d+)\n'),
-            'spring_potential_constant': re.compile(r'#!spring_potential_constant=(?P<spring_potential_constant>\d+)\n'),
-            'spring_potential_length': re.compile(r'#!spring_potential_length=(?P<spring_potential_length>\d+)\n')
+            'spring_potential_constant': re.compile(r'#!spring_potential_constant=(?P<spring_potential_constant>[-+]?\d*\.\d+|\d+)\n'),
+            'spring_potential_length': re.compile(r'#!spring_potential_length=(?P<spring_potential_length>\d+)\n'),
+            'virtual_spring_constant': re.compile(r'#!virtual_spring_constant=(?P<virtual_spring_constant>[-+]?\d*\.\d+|\d+)\n'),
+            'virtual_spring_length': re.compile(r'#!virtual_spring_length=(?P<virtual_spring_length>\d+)\n')
         }
 
     def _parse_line(self, line):
@@ -129,10 +135,28 @@ class neo4Polymer_BFM_fileparser:
                 if key == 'number_of_monomers_per_chain':
                     data.append([key, match])
 
+                if key == 'dendrimer_generation':
+                    data.append([key, match])
+
+                if key == 'dendrimer_spacer_length':
+                    data.append([key, match])
+
+                if key == 'dendrimer_core_functionality':
+                    data.append([key, match])
+
+                if key == 'dendrimer_branching_point_functionality':
+                    data.append([key, match])
+
                 if key == 'spring_potential_constant':
                     data.append([key, match])
 
                 if key == 'spring_potential_length':
+                    data.append([key, match])
+
+                if key == 'virtual_spring_constant':
+                    data.append([key, match])
+
+                if key == 'virtual_spring_length':
                     data.append([key, match])
 
                 if key == 'feature_name':

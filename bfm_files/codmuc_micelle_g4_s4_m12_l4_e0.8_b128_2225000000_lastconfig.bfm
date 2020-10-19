@@ -1,7 +1,7 @@
 ########################################################
-#!version=2.0
+#!version=2.2
 #Bond Fluctuation Model - simulation data file
-#Tue Jun 30 11:58:24 2020
+#Mon Oct 19 14:58:39 2020
 #monomer numbering starts at 1
 
 ########################################################
@@ -20,6 +20,7 @@
 # FeatureExcludedVolumeSc<FeatureLatticePowerOfTwo<unsigned char> >
 # FeatureNNInteractionSc<FeatureLatticePowerOfTwo>
 # FeatureBoltzmann
+# FeatureSystemInformationDendrimer
 # 
 # not registered features: 
 # 
@@ -3761,6 +3762,14 @@
 !nn_interaction 3 4 0.8
 !nn_interaction 3 5 0.8
 
+
+#!dendrimer_generation=4
+
+#!dendrimer_spacer_length=4
+
+#!dendrimer_core_functionality=3
+
+#!dendrimer_branching_point_functionality=3
 
 
 !mcs=2250000000
