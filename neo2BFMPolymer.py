@@ -512,15 +512,15 @@ class neo2BFMPolymer:
     def addPeriodicityToSimulationRun(self, simulationRunName, pX, pY, pZ):
         '''Connect a SimulationRun node with a Parameter node of name Periodicity with the given values.
 
-        A parameter node with name Periodicity contains a value in the form "pX x pY x pZ" encoded as bool ("True", "False")
+        A parameter node with name Periodicity contains a value in the form "[pX, pY, pZ]" encoded as bool (True:0, False:1)
         used in FeatureBox of LeMonADE that can be connected to any SimulationRun node that uses this parameter.
         If the Periodicity node does not exist, it is created and then connected to the SimulationRun.
 
         Parameters:
             simulationRunName (str): name of the SimulationRun node
-            pX (bool): periodicity in x-direction (True = periodic, False = non-periodic)
-            pY (bool): periodicity in y-direction (True = periodic, False = non-periodic)
-            pZ (bool): periodicity in z-direction (True = periodic, False = non-periodic)
+            pX (bool): periodicity in x-direction (0 = periodic, 1 = non-periodic)
+            pY (bool): periodicity in y-direction (0 = periodic, 1 = non-periodic)
+            pZ (bool): periodicity in z-direction (0 = periodic, 1 = non-periodic)
 
         Returns:
             exit code (bool): True if connection was added, False if connection already exists
@@ -532,7 +532,26 @@ class neo2BFMPolymer:
 
         return self.addParameterSimulationRunGeneral(nodeNameSimRun, nodeName, nodeValue)
 
-    
+    def addVolumeFractionToSimulationRun(self, simulationRunName, volFrac):
+        '''Connect a SimulationRun node with a Parameter node of name VolumeFraction with the given value.
+
+        A parameter node with name VolumeFraction contains a float value in the form x.xxx.
+        used in FeatureBox of LeMonADE that can be connected to any SimulationRun node that uses this parameter.
+        If the VolumeFraction node does not exist, it is created and then connected to the SimulationRun.
+
+        Parameters:
+            simulationRunName (str): name of the SimulationRun node
+            volFrac (float): volume fraction of a particular component
+
+        Returns:
+            exit code (bool): True if connection was added, False if connection already exists
+                              or SimulationRun node does not exist
+        '''
+        nodeNameSimRun = simulationRunName
+        nodeName       = "VolumeFraction"
+        nodeValue      = self._float_prec3_format(volFrac)
+
+        return self.addParameterSimulationRunGeneral(nodeNameSimRun, nodeName, nodeValue)
 
     def addNNInteractionToSimulationRun(self, simulationRunName, epsilon):
         '''Connect a SimulationRun node with a Parameter node of name NNInteraction with the given value.
