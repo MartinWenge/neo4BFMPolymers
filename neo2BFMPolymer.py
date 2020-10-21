@@ -3,6 +3,7 @@ import os
 import socket
 import neo4Polymer_bfmFileParser as bfmParser
 import neo4Polymer_codmuc_RGTensorFileParser as codmucRgTParser
+import neo4Polymer_linPolSol_RGFileParser as linPolSolRgParser
 
 
 class neo2BFMPolymer:
@@ -1013,37 +1014,37 @@ class neo2BFMPolymer:
         # TODO: consider cases where parameter list might be usefull?
         # TODO: feature name is formatted again in the addFeatureToSimulationRun for robustness, usefull?
         featureList = [self._featureName_format(f) for f in featureList_full]
-        
+
         if(featureList is not None):
             for feature in featureList:
                 self.addFeatureToSimulationRun(simulationRunName, feature)
         # ## ---------  features  --------- ###
 
-        ### collect information from all available features
+        # ## collect information from all available features
         # ## ------- FeatureMoleculesIO ## #
-        featureName="FeatureMoleculesIO"
+        featureName = "FeatureMoleculesIO"
         if (featureName in featureList):
             numOfMonomersKey = "number_of_monomers"
             numOfMonomers = self._findElementInKeyValueDataList(numOfMonomersKey, dataArray)
             if(numOfMonomers is not None):
                 self.addTotalNumberOfMonomersToSimulationRun(simulationRunName, int(numOfMonomers[0]))
 
-            #other keys provided: !bonds, !add_bonds, !remove_bonds, !mcs
+            # other keys provided: !bonds, !add_bonds, !remove_bonds, !mcs
         # ## ------- FeatureMoleculesIO ## #
 
         # ## ------- FeatureMoleculesIOUnsaveCheck ## #
-        featureName="FeatureMoleculesIOUnsaveCheck"
+        featureName = "FeatureMoleculesIOUnsaveCheck"
         if (featureName in featureList):
             numOfMonomersKey = "number_of_monomers"
             numOfMonomers = self._findElementInKeyValueDataList(numOfMonomersKey, dataArray)
             if(numOfMonomers is not None):
                 self.addTotalNumberOfMonomersToSimulationRun(simulationRunName, int(numOfMonomers[0]))
 
-            #other keys provided: !bonds, !add_bonds, !remove_bonds, !mcs
+            # other keys provided: !bonds, !add_bonds, !remove_bonds, !mcs
         # ## ------- FeatureMoleculesIOUnsaveCheck ## #
 
         # ## ------- FeatureBox ---------- ###
-        featureName="FeatureBox"
+        featureName = "FeatureBox"
         if (featureName in featureList):
             boxSizeKeyX = "box_x"
             boxSizeX = (self._findElementInKeyValueDataList(boxSizeKeyX, dataArray))[0]
@@ -1139,7 +1140,7 @@ class neo2BFMPolymer:
                         if(self.addNNInteractionToSimulationRun(simulationRunName, parameterValue)):
                             self.connectParameterToFeatureGeneral(featureName, parameterName, parameterValue)
         # ## ------- FeatureNNInteractionBcc ---------- ###
-        
+
         # ## -----  FeatureSystemInformationRingMelt ------ ## #
         featureName = "FeatureSystemInformationRingMelt"
         if (featureName in featureList):
@@ -1148,7 +1149,7 @@ class neo2BFMPolymer:
             if (numOfRings is not None):
                 parameterName = "NumberOfRings"
                 parameterValue = numOfRings[0]
-                self.addNumberOfRingsToSimulationRun(simulationRunName,parameterValue)
+                self.addNumberOfRingsToSimulationRun(simulationRunName, parameterValue)
                 self.connectParameterToFeatureGeneral(featureName, parameterName, parameterValue)
 
             numOfMonomersInRingKey = "number_of_monomers_per_ring"
@@ -1156,7 +1157,7 @@ class neo2BFMPolymer:
             if (numOfMonomersInRing is not None):
                 parameterName = "NumberOfMonomersInRing"
                 parameterValue = numOfMonomersInRing[0]
-                self.addNumberOfMonomersInRingToSimulationRun(simulationRunName,parameterValue)
+                self.addNumberOfMonomersInRingToSimulationRun(simulationRunName, parameterValue)
                 self.connectParameterToFeatureGeneral(featureName, parameterName, parameterValue)
         # ## -----  FeatureSystemInformationRingMelt ------ ## #
 
@@ -1168,7 +1169,7 @@ class neo2BFMPolymer:
             if (numOfTendomers is not None):
                 parameterName = "NumberOfTendomers"
                 parameterValue = numOfTendomers[0]
-                self.addNumberOfTendomersToSimulationRun(simulationRunName,parameterValue)
+                self.addNumberOfTendomersToSimulationRun(simulationRunName, parameterValue)
                 self.connectParameterToFeatureGeneral(featureName, parameterName, parameterValue)
 
             numOfCrosslinkersKey = "number_of_crosslinkers"
@@ -1176,7 +1177,7 @@ class neo2BFMPolymer:
             if (numOfCrosslinkers is not None):
                 parameterName = "NumberOfCrosslinkers"
                 parameterValue = numOfCrosslinkers[0]
-                self.addNumberOfCrosslinkersToSimulationRun(simulationRunName,parameterValue)
+                self.addNumberOfCrosslinkersToSimulationRun(simulationRunName, parameterValue)
                 self.connectParameterToFeatureGeneral(featureName, parameterName, parameterValue)
 
             numOfLabelsPerArmKey = "number_of_labels_per_arm"
@@ -1184,7 +1185,7 @@ class neo2BFMPolymer:
             if (numOfLabelsPerArm is not None):
                 parameterName = "NumberOfLabelsPerArm"
                 parameterValue = numOfLabelsPerArm[0]
-                self.addNumberOfLabelsPerArmToSimulationRun(simulationRunName,parameterValue)
+                self.addNumberOfLabelsPerArmToSimulationRun(simulationRunName, parameterValue)
                 self.connectParameterToFeatureGeneral(featureName, parameterName, parameterValue)
 
             numOfMonomersPerChainKey = "number_of_monomers_per_chain"
@@ -1192,7 +1193,7 @@ class neo2BFMPolymer:
             if (numOfMonomersPerChain is not None):
                 parameterName = "NumberOfMonomersPerChain"
                 parameterValue = numOfMonomersPerChain[0]
-                self.addNumberOfMonomersPerChainToSimulationRun(simulationRunName,parameterValue)
+                self.addNumberOfMonomersPerChainToSimulationRun(simulationRunName, parameterValue)
                 self.connectParameterToFeatureGeneral(featureName, parameterName, parameterValue)
         # ## -----  FeatureSystemInformationTendomer ------ ## #
 
@@ -1204,7 +1205,7 @@ class neo2BFMPolymer:
             if (generation is not None):
                 parameterName = "DendrimerGeneration"
                 parameterValue = generation[0]
-                self.addDendrimerGenerationToSimulationRun(simulationRunName,parameterValue)
+                self.addDendrimerGenerationToSimulationRun(simulationRunName, parameterValue)
                 self.connectParameterToFeatureGeneral(featureName, parameterName, parameterValue)
 
             spacerLengthKey = "dendrimer_spacer_length"
@@ -1212,7 +1213,7 @@ class neo2BFMPolymer:
             if (spacerLength is not None):
                 parameterName = "DendrimerSpacerLength"
                 parameterValue = spacerLength[0]
-                self.addDendrimerSpacerLengthToSimulationRun(simulationRunName,parameterValue)
+                self.addDendrimerSpacerLengthToSimulationRun(simulationRunName, parameterValue)
                 self.connectParameterToFeatureGeneral(featureName, parameterName, parameterValue)
 
             coreFunctionalityKey = "dendrimer_core_functionality"
@@ -1220,7 +1221,7 @@ class neo2BFMPolymer:
             if (coreFunctionality is not None):
                 parameterName = "DendrimerCoreFunctionality"
                 parameterValue = coreFunctionality[0]
-                self.addDendrimerCoreFunctionalityToSimulationRun(simulationRunName,parameterValue)
+                self.addDendrimerCoreFunctionalityToSimulationRun(simulationRunName, parameterValue)
                 self.connectParameterToFeatureGeneral(featureName, parameterName, parameterValue)
 
             branchingPointFunctionalityKey = "dendrimer_branching_point_functionality"
@@ -1228,7 +1229,7 @@ class neo2BFMPolymer:
             if (branchingPointFunctionality is not None):
                 parameterName = "DendrimerBranchingPointFunctionality"
                 parameterValue = branchingPointFunctionality[0]
-                self.addDendrimerBranchingPointFunctionalityToSimulationRun(simulationRunName,parameterValue)
+                self.addDendrimerBranchingPointFunctionalityToSimulationRun(simulationRunName, parameterValue)
                 self.connectParameterToFeatureGeneral(featureName, parameterName, parameterValue)
         # ## -----  FeatureSystemInformationDendrimer ------ ## #
 
@@ -1240,7 +1241,7 @@ class neo2BFMPolymer:
             if (springConst is not None):
                 parameterName = "SpringConstant"
                 parameterValue = self._float_prec3_format(springConst[0])
-                self.addSpringConstantToSimulationRun(simulationRunName,parameterValue)
+                self.addSpringConstantToSimulationRun(simulationRunName, parameterValue)
                 self.connectParameterToFeatureGeneral(featureName, parameterName, parameterValue)
 
             springLengthKey = "spring_potential_length"
@@ -1248,7 +1249,7 @@ class neo2BFMPolymer:
             if (springLength is not None):
                 parameterName = "SpringLength"
                 parameterValue = self._float_prec3_format(springLength[0])
-                self.addSpringLengthToSimulationRun(simulationRunName,parameterValue)
+                self.addSpringLengthToSimulationRun(simulationRunName, parameterValue)
                 self.connectParameterToFeatureGeneral(featureName, parameterName, parameterValue)
         # ## -----  FeatureSpringPotentialTwoGroups ------ ## #
 
@@ -1261,7 +1262,7 @@ class neo2BFMPolymer:
             if (springConst is not None):
                 parameterName = "SpringConstant"
                 parameterValue = self._float_prec3_format(springConst[0])
-                self.addSpringConstantToSimulationRun(simulationRunName,parameterValue)
+                self.addSpringConstantToSimulationRun(simulationRunName, parameterValue)
                 self.connectParameterToFeatureGeneral(featureName, parameterName, parameterValue)
 
             springLengthKey = "virtual_spring_length"
@@ -1269,10 +1270,9 @@ class neo2BFMPolymer:
             if (springLength is not None):
                 parameterName = "SpringLength"
                 parameterValue = self._float_prec3_format(springLength[0])
-                self.addSpringLengthToSimulationRun(simulationRunName,parameterValue)
+                self.addSpringLengthToSimulationRun(simulationRunName, parameterValue)
                 self.connectParameterToFeatureGeneral(featureName, parameterName, parameterValue)
         # ## -----  FeatureVirtualSpringTwoObjects ------ ## #
-
 
         # finally return True if no errors occurred
         return True
@@ -1364,6 +1364,66 @@ class neo2BFMPolymer:
             )
             self.addResultAsphericity(simulationRunName, formatedAString)
         # ## ---------  Asphericity   --------- ###
+
+        # finally return True if no errors occurred
+        return True
+
+    def addLinearPolymerSolutionRgFileToDatabase(self, simulationRunName, filename):
+        '''High level user function to add nodes to the database by reading a radius of gyrationfile, using the neo4Polymer_linPolSol_Rg_fileparser.
+
+        Parameters:
+            simulationRunName (str): name of the simulationRun
+            filename (str): name of the radius of gyration file
+
+        Returns:
+            True if file content was added properly
+            False if errors occur
+        '''
+        # first check if the simulation run exists
+        elementExists = self.graph.run("MATCH (elem:{}) WHERE elem.name=\"{}\" return elem".format(self.nodeType_simulationRun, simulationRunName)).data()
+        if (len(elementExists) == 0):
+            print("WARNING: {} does not exist. To add data from a BFM file, the simulationRun node must exist!".format(simulationRunName))
+            return False
+
+        # check if file exists
+        if(os.path.isfile(filename)):
+            # get full path to filename WITHOUT backslashes!
+            pathToRgFile = "{}: {}".format(socket.gethostname(), os.path.abspath(filename))
+            checkForBackslashes = pathToRgFile.replace('\\', '/')
+            if (pathToRgFile != checkForBackslashes):
+                pathToRgFile = checkForBackslashes
+                print("WARNING: replaced backslashes in filepath to slashes: {}".format(pathToRgFile))
+
+            # now you may add it to the simulationRun node
+            self.addPathToSimulationRun(simulationRunName, pathToRgFile)
+        else:
+            print("WARNING: file {} does not exist!".format(filename))
+            return False
+
+        # start the bfm file reader
+        fileReader = linPolSolRgParser.neo4Polymer_linPolSol_Rg_fileparser(filename)
+
+        # get the data-array
+        dataArray = fileReader.parse_file()
+
+        # extract a keywords from the data array
+        # start with features to connect the parameters!
+
+        # ## ---------  features  --------- ###
+        featureKey = "feature_name"
+        featureList = self._findElementInKeyValueDataList(featureKey, dataArray)
+        if(featureList is not None):
+            for feature in featureList:
+                self.addFeatureToSimulationRun(simulationRunName, feature)
+        # ## ---------  features  --------- ###
+
+        # ## ---------  radius of gyration squared   --------- ###
+        mean_rgSquaredKey = "mean_rg"
+        mean_rgSquared = self._findElementInKeyValueDataList(mean_rgSquaredKey, dataArray)
+        if(mean_rgSquared is not None):
+            formatedRgString = "[Rg^2, {}]".format(self._float_prec4_format(mean_rgSquared[0]))
+            self.addResultRadiusOfGyration(simulationRunName, formatedRgString)
+        # ## ---------  radius of gyration squared   --------- ###
 
         # finally return True if no errors occurred
         return True

@@ -129,6 +129,7 @@ def test_read_codmuc_micelle_g3_s4_m27_l4_e08_b128():
     assert not errors, "errors occured:\n{}".format("\n".join(errors))
 #
 
+
 def test_read_RingMelt_N128_Phi05_Box128_EA5_EB17_MCS0_GPU():
 
     testreader = bfmParser.neo4Polymer_BFM_fileparser("tests/RingMelt_N128_Phi05_Box128_EA5_EB17_MCS0_GPU.bfm")
@@ -147,8 +148,8 @@ def test_read_RingMelt_N128_Phi05_Box128_EA5_EB17_MCS0_GPU():
     # ['number_of_rings', '1024'], ['number_of_monomers_per_ring', '128'], ['mcs', '0']]
 
     # still NOT supported:
-    #!activation_energy=5
-    #!breaking_energy=17
+    # #!activation_energy=5
+    # #!breaking_energy=17
 
     # perform various test in a single function with an error array
     # https://stackoverflow.com/questions/39896716/can-i-perform-multiple-assertions-in-pytest
@@ -239,7 +240,6 @@ def test_read_RingMelt_N128_Phi05_Box128_EA5_EB17_MCS0_GPU():
     if not (expected in result):
         errors.append("feature is {} != {}".format(result, expected))
 
-
     # ##  ---- num of monomers ----  ## #
     search = "number_of_monomers"
     result = int([dataArrayElement[1] for dataArrayElement in data_array if dataArrayElement[0] == search][0])
@@ -272,17 +272,17 @@ def test_read_RingMelt_N128_Phi05_Box128_EA5_EB17_MCS0_GPU():
     assert not errors, "errors occurred:\n{}".format("\n".join(errors))
 #
 
-def test_read_dend_chain_spring_g3_s4_l32_b64_d05_r012_k1():
 
+def test_read_dend_chain_spring_g3_s4_l32_b64_d05_r012_k1():
     testreader = bfmParser.neo4Polymer_BFM_fileparser("tests/dend_chain_spring_g3_s4_l32_b64_d05_r012_k1.0.bfm")
     data_array = testreader.parse_file()
     # expected output:
-    # [['feature_name', 'FeatureMoleculesIO'], ['feature_name', 'FeatureBox'], 
-    # ['feature_name', 'FeatureBondset<FastBondset>'], ['feature_name', 'FeatureVirtualSpringTwoObjects'], 
-    # ['feature_name', 'FeatureAttributes<int>'], ['feature_name', 'FeatureBoltzmann'], 
-    # ['feature_name', 'FeatureSystemInformationDendrimer'], 
-    # ['number_of_monomers', '16373'], ['box_x', '64'], ['box_y', '64'], ['box_z', '64'], 
-    # ['periodic_x', '1'], ['periodic_y', '1'], ['periodic_z', '1'], 
+    # [['feature_name', 'FeatureMoleculesIO'], ['feature_name', 'FeatureBox'],
+    # ['feature_name', 'FeatureBondset<FastBondset>'], ['feature_name', 'FeatureVirtualSpringTwoObjects'],
+    # ['feature_name', 'FeatureAttributes<int>'], ['feature_name', 'FeatureBoltzmann'],
+    # ['feature_name', 'FeatureSystemInformationDendrimer'],
+    # ['number_of_monomers', '16373'], ['box_x', '64'], ['box_y', '64'], ['box_z', '64'],
+    # ['periodic_x', '1'], ['periodic_y', '1'], ['periodic_z', '1'],
     # ['virtual_spring_constant', '1'], ['virtual_spring_length', '12'], ['mcs', '0']]
 
     # perform various test in a single function with an error array
@@ -362,7 +362,6 @@ def test_read_dend_chain_spring_g3_s4_l32_b64_d05_r012_k1():
     expected = 'FeatureVirtualSpringTwoObjects'
     if not (expected in result):
         errors.append("feature is {} != {}".format(result, expected))
-
 
     # ##  ---- num of monomers ----  ## #
     search = "number_of_monomers"
