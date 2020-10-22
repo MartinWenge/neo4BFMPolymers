@@ -27,7 +27,7 @@ def test_read_linchains_n32_b64_d024():
     # perform various test in a single function with an error array
     # https://stackoverflow.com/questions/39896716/can-i-perform-multiple-assertions-in-pytest
     errors = []
-    print(data_array)
+
     # ##  ---- features ----  ## #
     search = "feature_name"
     result = [dataArrayElement[1] for dataArrayElement in data_array if dataArrayElement[0] == search]

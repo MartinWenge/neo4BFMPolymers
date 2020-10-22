@@ -4,6 +4,7 @@ import socket
 import neo4Polymer_bfmFileParser as bfmParser
 import neo4Polymer_codmuc_RGTensorFileParser as codmucRgTParser
 import neo4Polymer_linPolSol_RGFileParser as linPolSolRgParser
+import neo4Polymer_singleDendr_RGFileParser as singleDendrRgTParser
 
 
 class neo2BFMPolymer:
@@ -1369,7 +1370,7 @@ class neo2BFMPolymer:
         return True
 
     def addLinearPolymerSolutionRgFileToDatabase(self, simulationRunName, filename):
-        '''High level user function to add nodes to the database by reading a radius of gyrationfile, using the neo4Polymer_linPolSol_Rg_fileparser.
+        '''High level user function to add nodes to the database by reading a radius of gyration file, using the neo4Polymer_linPolSol_Rg_fileparser.
 
         Parameters:
             simulationRunName (str): name of the simulationRun
@@ -1424,6 +1425,79 @@ class neo2BFMPolymer:
             formatedRgString = "[Rg^2, {}]".format(self._float_prec4_format(mean_rgSquared[0]))
             self.addResultRadiusOfGyration(simulationRunName, formatedRgString)
         # ## ---------  radius of gyration squared   --------- ###
+
+        # finally return True if no errors occurred
+        return True
+
+
+    def addSingleDendrimerRgTFileToDatabase(self, simulationRunName, filename):
+        '''High level user function to add nodes to the database by reading a radius of gyration tensor file, using the neo4Polymer_singleDendr_RGFileParser.
+
+        Parameters:
+            simulationRunName (str): name of the simulationRun
+            filename (str): name of the radius of gyration file
+
+        Returns:
+            True if file content was added properly
+            False if errors occur
+        '''
+        # first check if the simulation run exists
+        elementExists = self.graph.run("MATCH (elem:{}) WHERE elem.name=\"{}\" return elem".format(self.nodeType_simulationRun, simulationRunName)).data()
+        if (len(elementExists) == 0):
+            print("WARNING: {} does not exist. To add data from a BFM file, the simulationRun node must exist!".format(simulationRunName))
+            return False
+
+        # check if file exists
+        if(os.path.isfile(filename)):
+            # get full path to filename WITHOUT backslashes!
+            pathToRgFile = "{}: {}".format(socket.gethostname(), os.path.abspath(filename))
+            checkForBackslashes = pathToRgFile.replace('\\', '/')
+            if (pathToRgFile != checkForBackslashes):
+                pathToRgFile = checkForBackslashes
+                print("WARNING: replaced backslashes in filepath to slashes: {}".format(pathToRgFile))
+
+            # now you may add it to the simulationRun node
+            self.addPathToSimulationRun(simulationRunName, pathToRgFile)
+        else:
+            print("WARNING: file {} does not exist!".format(filename))
+            return False
+
+        # start the bfm file reader
+        fileReader = singleDendrRgTParser.neo4Polymer_singleDendrimer_RgT_fileparser(filename)
+
+        # get the data-array
+        dataArray = fileReader.parse_file()
+
+        # extract a keywords from the data array
+        # start with features to connect the parameters!
+
+        # ## ---------  molecule part  --------- ###
+        moleculePartKey = "moleculePart"
+        moleculePart = self._findElementInKeyValueDataList(moleculePartKey, dataArray)
+        if(moleculePart is not None):
+            if (len(moleculePart) == 1):
+                currentMoleculePart = moleculePart[0]
+            else:
+                print("WARNING: rg tensor file contains more than one molecule part")
+                #self.addFeatureToSimulationRun(simulationRunName, feature)
+
+        # ## ---------  molecule part  --------- ###
+
+        # ## ---------  radius of gyration squared   --------- ###
+        mean_rgSquaredKey = "mean_rg"
+        mean_rgSquared = self._findElementInKeyValueDataList(mean_rgSquaredKey, dataArray)
+        if(mean_rgSquared is not None):
+            formatedRgString = "[Rg^2, {}]".format(self._float_prec4_format(mean_rgSquared[0]))
+            self.addResultRadiusOfGyration(simulationRunName, formatedRgString)
+        # ## ---------  radius of gyration squared   --------- ###
+
+        # ## ---------  asphericity   --------- ###
+        mean_aspericityKey = "mean_A"
+        mean_aspericity = self._findElementInKeyValueDataList(mean_aspericityKey, dataArray)
+        if(mean_aspericity is not None):
+            formatedRgString = "[<A>, {}]".format(self._float_prec4_format(mean_aspericity[0]))
+            self.addResultRadiusOfGyration(simulationRunName, formatedRgString)
+        # ## ---------  asphericity   --------- ###
 
         # finally return True if no errors occurred
         return True

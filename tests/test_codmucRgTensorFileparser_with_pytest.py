@@ -33,7 +33,7 @@ def test_read_codmuc_micelle_g4_s4_m12_l4_e08_b128():
     # perform various test in a single function with an error array
     # https://stackoverflow.com/questions/39896716/can-i-perform-multiple-assertions-in-pytest
     errors = []
-    print(data_array)
+
     # ##  ---- features ----  ## #
     search = "feature_name"
     result = [dataArrayElement[1] for dataArrayElement in data_array if dataArrayElement[0] == search]
