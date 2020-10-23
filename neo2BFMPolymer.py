@@ -1,6 +1,7 @@
 from datetime import date
 import os
 import socket
+import re
 import neo4Polymer_bfmFileParser as bfmParser
 import neo4Polymer_codmuc_RGTensorFileParser as codmucRgTParser
 import neo4Polymer_linPolSol_RGFileParser as linPolSolRgParser
@@ -1500,4 +1501,143 @@ class neo2BFMPolymer:
 
         # finally return True if no errors occurred
         return True
+
+    def addAnyRadiusOfGyrationFileToDatabase(self, simulationRunName, filename):
+        '''High level user function to add nodes to the database by reading a radius of gyration file.
+
+        First, the file type is detected, then the respective parser is selected and applied.
+
+        Parameters:
+            simulationRunName (str): name of the simulationRun
+            filename (str): name of the radius of gyration file
+
+        Returns:
+            True if file content was added properly
+            False if errors occur
+        '''
+                # first check if the simulation run exists
+        elementExists = self.graph.run("MATCH (elem:{}) WHERE elem.name=\"{}\" return elem".format(self.nodeType_simulationRun, simulationRunName)).data()
+        if (len(elementExists) == 0):
+            print("WARNING: {} does not exist. To add data from a BFM file, the simulationRun node must exist!".format(simulationRunName))
+            return False
+
+        # check if file exists
+        if(os.path.isfile(filename)):
+            # get full path to filename WITHOUT backslashes!
+            pathToRgFile = "{}: {}".format(socket.gethostname(), os.path.abspath(filename))
+            checkForBackslashes = pathToRgFile.replace('\\', '/')
+            if (pathToRgFile != checkForBackslashes):
+                pathToRgFile = checkForBackslashes
+                print("WARNING: replaced backslashes in filepath to slashes: {}".format(pathToRgFile))
+
+            # now you may add it to the simulationRun node
+            self.addPathToSimulationRun(simulationRunName, pathToRgFile)
+        else:
+            print("WARNING: file {} does not exist!".format(filename))
+            return False
+
+        # read a few lines of the file to detect the file type and choose the parser
+        # setup unique line dict
+        parser_dict = {
+            "dendrimerRgTensorAnalyzer": re.compile(r'# Radius of Gyration Tensor of DendrimerRGTensorAnalyzer:[ \t]+([\w ]+)\n'),
+            "codendrimerRgTensor": re.compile(r'# ID[ \t]+Rg2[ \t]+Rgx2[ \t]+Rgy2[ \t]+Rgz2[ \t]+L1[ \t]+L2[ \t]+L3[ \t]+([\w<>]+)\n'),
+            "linearChainRgFile": re.compile(r'# mcs[ \t]+R_G Chain(\w+)\n')
+        }
+
+        # read the first 30 lines of the file
+        parser_identifier = None
+        with open(filename, 'r') as file_object:
+            line = file_object.readline()
+            counter = 0
+            while line:
+                counter = counter +1
+                line = file_object.readline()
+                for key, rx in parser_dict.items():
+                    match = rx.search(line)
+                    if match:
+                        key = parser_identifier
+                        line = False
+                if counter == 30:
+                    line = False
+
+        breakpoint()
+        if (parser_identifier is not None):
+            if (parser_identifier == "dendrimerRgTensorAnalyzer"):
+                fileReader = singleDendrRgTParser.neo4Polymer_singleDendrimer_RgT_fileparser(filename)
+            elif (parser_identifier == "codendrimerRgTensor"):
+                fileReader = codmucRgTParser.neo4Polymer_cudmuc_RgTensor_fileparser(filename)
+            elif (parser_identifier == "linearChainRgFile"):
+                fileReader = linPolSolRgParser.neo4Polymer_linPolSol_Rg_fileparser(filename)
+
+            # get the data-array using the @abstractmethod parse_file
+            dataArray = fileReader.parse_file()
+
+            # read in generic properties
+            # ## ---------  features  --------- ###
+            featureKey = "feature_name"
+            featureList = self._findElementInKeyValueDataList(featureKey, dataArray)
+            if(featureList is not None):
+                for feature in featureList:
+                    self.addFeatureToSimulationRun(simulationRunName, feature)
+            # ## ---------  features  --------- ###
+            # ## ---------  total number of monomers  --------- ###
+            numOfMonomersKey = "number_of_monomers"
+            numOfMonomers = self._findElementInKeyValueDataList(numOfMonomersKey, dataArray)
+            if(numOfMonomers is not None):
+                self.addTotalNumberOfMonomersToSimulationRun(simulationRunName, int(numOfMonomers[0]))
+            # ## ---------  total number of monomers  --------- ###
+            
+            # ===================
+            if ((parser_identifier == "dendrimerRgTensorAnalyzer") or (parser_identifier == "linearChainRgFile")):
+                # ## ---------  radius of gyration squared   --------- ###
+                mean_rgSquaredKey = "mean_rg"
+                mean_rgSquared = self._findElementInKeyValueDataList(mean_rgSquaredKey, dataArray)
+                if(mean_rgSquared is not None):
+                    formatedRgString = "[Rg^2, {}]".format(self._float_prec4_format(mean_rgSquared[0]))
+                    self.addResultRadiusOfGyration(simulationRunName, formatedRgString)
+                # ## ---------  radius of gyration squared   --------- ###
+                # ## ---------  asphericity   --------- ###
+                mean_aspericityKey = "mean_A"
+                mean_aspericity = self._findElementInKeyValueDataList(mean_aspericityKey, dataArray)
+                if(mean_aspericity is not None):
+                    formatedRgString = "[<A>, {}]".format(self._float_prec4_format(mean_aspericity[0]))
+                    self.addResultRadiusOfGyration(simulationRunName, formatedRgString)
+                # ## ---------  asphericity   --------- ###
+            # ===================
+
+            # ===================
+            if (parser_identifier == "codendrimerRgTensor"):
+                # ## ---------  radius of gyration squared   --------- ###  
+                dendrimer_rgSquaredKey = "dendrimer_Rg2"
+                dendrimer_rgSquared = self._findElementInKeyValueDataList(dendrimer_rgSquaredKey, dataArray)
+                graftedChains_rgSquaredKey = "graftedChains_Rg2"
+                graftedChains_rgSquared = self._findElementInKeyValueDataList(graftedChains_rgSquaredKey, dataArray)
+                totalMolecule_rgSquaredKey = "totalMolecule_Rg2"
+                totalMolecule_rgSquared = self._findElementInKeyValueDataList(totalMolecule_rgSquaredKey, dataArray)
+                if((dendrimer_rgSquared is not None) and (graftedChains_rgSquared is not None) and (totalMolecule_rgSquared is not None)):
+                    formatedRgString = "[[{},{}],[{},{}],[{},{}]]".format(
+                        "Rg^2 total codendrimer", self._float_prec4_format(float(totalMolecule_rgSquared[0])),
+                        "Rg^2 dendritic core", self._float_prec4_format(float(dendrimer_rgSquared[0])),
+                        "Rg^2 grafted chains", self._float_prec4_format(float(graftedChains_rgSquared[0]))
+                    )
+                    self.addResultRadiusOfGyration(simulationRunName, formatedRgString)
+                # ## ---------  radius of gyration squared   --------- ###
+                # ## ---------  Asphericity   --------- ###
+                dendrimer_asphericityKey = "dendrimer_<A>"
+                dendrimer_asphericity = self._findElementInKeyValueDataList(dendrimer_asphericityKey, dataArray)
+                graftedChains_asphericityKey = "graftedChains_<A>"
+                graftedChains_asphericity = self._findElementInKeyValueDataList(graftedChains_asphericityKey, dataArray)
+                totalMolecule_asphericityKey = "totalMolecule_<A>"
+                totalMolecule_asphericity = self._findElementInKeyValueDataList(totalMolecule_asphericityKey, dataArray)
+                if((dendrimer_asphericity is not None) and (graftedChains_asphericity is not None) and (totalMolecule_asphericity is not None)):
+                    formatedAString = "[[{},{}],[{},{}],[{},{}]]".format(
+                        "<A> total codendrimer", self._float_prec4_format(float(totalMolecule_asphericity[0])),
+                        "<A> dendritic core", self._float_prec4_format(float(dendrimer_asphericity[0])),
+                        "<A> grafted chains", self._float_prec4_format(float(graftedChains_asphericity[0]))
+                    )
+                    self.addResultAsphericity(simulationRunName, formatedAString)
+                # ## ---------  Asphericity   --------- ###
+
+        # finally return True if no errors occurred
+        return True 
 #
