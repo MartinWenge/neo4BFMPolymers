@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 import re
 
+
 class abstract_parser(ABC):
     def __init__(self, fn):
         self.filename = fn
@@ -47,4 +48,4 @@ class abstract_parser(ABC):
     @abstractmethod
     def parse_file(self):
         pass
-    #
+#

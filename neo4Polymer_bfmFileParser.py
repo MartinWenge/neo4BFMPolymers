@@ -1,7 +1,8 @@
 import re
+import neo4Polymer_abstractParser as abstractParser
 
 
-class neo4Polymer_BFM_fileparser:
+class neo4Polymer_BFM_fileparser(abstractParser.abstract_parser):
     """ Read BFM-file headers written by the LeMonADE's AnalyzerWriteBFMFile.
 
     The parser defines a set of keys that can be found in the BFM files.
@@ -15,7 +16,7 @@ class neo4Polymer_BFM_fileparser:
         Returns:
             None
         """
-        self.filename = fn
+        abstractParser.abstract_parser.__init__(self, fn)
         self.key_dict = {
             'mcs': re.compile(r'!mcs=(?P<mcs>\d+)\n'),
             'number_of_monomers': re.compile(r'!number_of_monomers=(?P<number_of_monomers>\d+)\n'),
@@ -43,24 +44,6 @@ class neo4Polymer_BFM_fileparser:
             'virtual_spring_length': re.compile(r'#!virtual_spring_length=(?P<virtual_spring_length>\d+)\n')
         }
 
-    def _parse_line(self, line):
-        """ Apply the regex dictionary on every line to find key value pairs
-
-        Parameters:
-            line (str): the actual line of the file or a string
-
-        Returns:
-            key and value of the regex dictionary defined in rx_dict
-                if something was found
-            None, None otherwise
-        """
-        for key, rx in self.key_dict.items():
-            match = rx.search(line)
-            if match:
-                return key, match.group(key)
-        # if there are no matches
-        return None, None
-
     def parse_file(self):
         """Parse contant of a given bfm file
 
@@ -78,89 +61,92 @@ class neo4Polymer_BFM_fileparser:
             line = file_object.readline()
             counter = 0
             while line:
-                # at each line check for a match with a regex
-                key, match = self._parse_line(line)
-
                 # check the total number of lines read in
                 counter = counter + 1
 
-                # find mcs to stop after header
-                if key == 'mcs':
-                    data.append([key, match])
-                    print("reached mcs command, stop reading. last mcs= ", match)
-                    # does this finish the loop?
-                    line = False
-                    # close file
+                # at each line check for a match with a regex
+                key, reMatch = self._parse_line(line)
 
-                # matches with value on line
-                if key == 'number_of_monomers':
-                    data.append([key, match])
+                if (reMatch is not None):
+                    match = reMatch.group(key)
 
-                if key == 'box_x':
-                    data.append([key, match])
+                    # find mcs to stop after header
+                    if key == 'mcs':
+                        data.append([key, match])
+                        print("reached mcs command, stop reading. last mcs= ", match)
+                        # does this finish the loop?
+                        line = False
+                        # close file
 
-                if key == 'box_y':
-                    data.append([key, match])
+                    # matches with value on line
+                    if key == 'number_of_monomers':
+                        data.append([key, match])
 
-                if key == 'box_z':
-                    data.append([key, match])
+                    if key == 'box_x':
+                        data.append([key, match])
 
-                if key == 'periodic_x':
-                    data.append([key, match])
+                    if key == 'box_y':
+                        data.append([key, match])
 
-                if key == 'periodic_y':
-                    data.append([key, match])
+                    if key == 'box_z':
+                        data.append([key, match])
 
-                if key == 'periodic_z':
-                    data.append([key, match])
+                    if key == 'periodic_x':
+                        data.append([key, match])
 
-                if key == 'nn_interaction':
-                    data.append([key, match])
+                    if key == 'periodic_y':
+                        data.append([key, match])
 
-                if key == 'number_of_rings':
-                    data.append([key, match])
+                    if key == 'periodic_z':
+                        data.append([key, match])
 
-                if key == 'number_of_monomers_per_ring':
-                    data.append([key, match])
+                    if key == 'nn_interaction':
+                        data.append([key, match])
 
-                if key == 'number_of_tendomers':
-                    data.append([key, match])
+                    if key == 'number_of_rings':
+                        data.append([key, match])
 
-                if key == 'number_of_crosslinkers':
-                    data.append([key, match])
+                    if key == 'number_of_monomers_per_ring':
+                        data.append([key, match])
 
-                if key == 'number_of_labels_per_arm':
-                    data.append([key, match])
+                    if key == 'number_of_tendomers':
+                        data.append([key, match])
 
-                if key == 'number_of_monomers_per_chain':
-                    data.append([key, match])
+                    if key == 'number_of_crosslinkers':
+                        data.append([key, match])
 
-                if key == 'dendrimer_generation':
-                    data.append([key, match])
+                    if key == 'number_of_labels_per_arm':
+                        data.append([key, match])
 
-                if key == 'dendrimer_spacer_length':
-                    data.append([key, match])
+                    if key == 'number_of_monomers_per_chain':
+                        data.append([key, match])
 
-                if key == 'dendrimer_core_functionality':
-                    data.append([key, match])
+                    if key == 'dendrimer_generation':
+                        data.append([key, match])
 
-                if key == 'dendrimer_branching_point_functionality':
-                    data.append([key, match])
+                    if key == 'dendrimer_spacer_length':
+                        data.append([key, match])
 
-                if key == 'spring_potential_constant':
-                    data.append([key, match])
+                    if key == 'dendrimer_core_functionality':
+                        data.append([key, match])
 
-                if key == 'spring_potential_length':
-                    data.append([key, match])
+                    if key == 'dendrimer_branching_point_functionality':
+                        data.append([key, match])
 
-                if key == 'virtual_spring_constant':
-                    data.append([key, match])
+                    if key == 'spring_potential_constant':
+                        data.append([key, match])
 
-                if key == 'virtual_spring_length':
-                    data.append([key, match])
+                    if key == 'spring_potential_length':
+                        data.append([key, match])
 
-                if key == 'feature_name':
-                    data.append([key, "Feature" + match])
+                    if key == 'virtual_spring_constant':
+                        data.append([key, match])
+
+                    if key == 'virtual_spring_length':
+                        data.append([key, match])
+
+                    if key == 'feature_name':
+                        data.append([key, "Feature" + match])
 
                 # read next line
                 line = file_object.readline()

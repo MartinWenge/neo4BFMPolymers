@@ -1429,7 +1429,6 @@ class neo2BFMPolymer:
         # finally return True if no errors occurred
         return True
 
-
     def addSingleDendrimerRgTFileToDatabase(self, simulationRunName, filename):
         '''High level user function to add nodes to the database by reading a radius of gyration tensor file, using the neo4Polymer_singleDendr_RGFileParser.
 
@@ -1472,15 +1471,15 @@ class neo2BFMPolymer:
         # start with features to connect the parameters!
 
         # ## ---------  molecule part  --------- ###
-        moleculePartKey = "moleculePart"
-        moleculePart = self._findElementInKeyValueDataList(moleculePartKey, dataArray)
-        if(moleculePart is not None):
-            if (len(moleculePart) == 1):
-                currentMoleculePart = moleculePart[0]
-            else:
-                print("WARNING: rg tensor file contains more than one molecule part")
-                #self.addFeatureToSimulationRun(simulationRunName, feature)
-
+        #    --------- not jet used .. ---------   #
+        # moleculePartKey = "moleculePart"
+        # moleculePart = self._findElementInKeyValueDataList(moleculePartKey, dataArray)
+        # if(moleculePart is not None):
+        #     if (len(moleculePart) == 1):
+        #         currentMoleculePart = moleculePart[0]
+        #     else:
+        #         print("WARNING: rg tensor file contains more than one molecule part")
+        #         # self.addFeatureToSimulationRun(simulationRunName, feature)
         # ## ---------  molecule part  --------- ###
 
         # ## ---------  radius of gyration squared   --------- ###

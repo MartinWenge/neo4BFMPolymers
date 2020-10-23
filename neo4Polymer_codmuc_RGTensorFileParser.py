@@ -1,6 +1,7 @@
 import re
 import neo4Polymer_abstractParser as abstractParser
 
+
 class neo4Polymer_cudmuc_RgTensor_fileparser(abstractParser.abstract_parser):
     """ Read RgTensor files written by the LeMonADE's Analyzer-To-Be-Found.
 
