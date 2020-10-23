@@ -1,8 +1,9 @@
 import re
 import numpy as np
+import neo4Polymer_abstractParser as abstractParser
 
 
-class neo4Polymer_singleDendrimer_RgT_fileparser:
+class neo4Polymer_singleDendrimer_RgT_fileparser(abstractParser.abstract_parser):
     """ Read Rg files written by LeMonADE's Analyzer-To-Be-Found.
 
     The parser defines a set of keys that can be found in the radius of gyration tensor files.
@@ -16,7 +17,7 @@ class neo4Polymer_singleDendrimer_RgT_fileparser:
         Returns:
             None
         """
-        self.filename = fn
+        abstractParser.abstract_parser.__init__(self, fn)
         self.key_dict = {
             'moleculePart': re.compile(r'# Radius of Gyration Tensor of DendrimerRGTensorAnalyzer:[ \t]+(?P<moleculePart>([\w ]+))\n'),
             'data_block': re.compile(r'# time[ \t]+(\w+)[ \t]+(\w+)[ \t]+(\w+)[ \t]+(\w+)[ \t]+(\w+)[ \t]+(\w+)[ \t]+([\w<>]+)\n')
@@ -24,42 +25,6 @@ class neo4Polymer_singleDendrimer_RgT_fileparser:
         self.dataBlock_dict = {
             'line': re.compile(r'(\d+?)[ \t]+(\d+\.\d+)[ \t]+(\d+\.\d+)[ \t]+(\d+\.\d+)[ \t]+(\d+\.\d+)[ \t]+(\d+\.\d+)[ \t]+(\d+\.\d+)[ \t]+(\d+\.\d+)\n')
         }
-
-    def _parse_line(self, line):
-        """ Apply the regex key dictionary on every line to find key value pairs
-
-        Parameters:
-            line (str): the actual line of the file or a string
-
-        Returns:
-            key and value of the regex dictionary defined in key_dict
-                if something was found
-            None, None otherwise
-        """
-        for key, rx in self.key_dict.items():
-            match = rx.search(line)
-            if match:
-                return key, match
-        # if there are no matches
-        return None, None
-
-    def _parse_data_block(self, line):
-        """ Apply the regex dictionary dataBlock_dict on every data block line to find key value pairs
-
-        Parameters:
-            line (str): the actual line of the data block or a string
-
-        Returns:
-            key and full match of the regex dictionary defined in dataBlock_dict
-                if something was found
-            None, None otherwise
-        """
-        for key, rx in self.dataBlock_dict.items():
-            match = rx.search(line)
-            if match:
-                return key, match
-        # if there are no matches
-        return None, None
 
     def parse_file(self):
         """Parse content of a given radius of gyration tensor file

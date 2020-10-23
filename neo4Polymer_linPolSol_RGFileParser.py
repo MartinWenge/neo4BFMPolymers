@@ -1,8 +1,9 @@
 import re
 import numpy as np
+import neo4Polymer_abstractParser as abstractParser
 
 
-class neo4Polymer_linPolSol_Rg_fileparser:
+class neo4Polymer_linPolSol_Rg_fileparser(abstractParser.abstract_parser):
     """ Read Rg files written by LeMonADE's Analyzer-To-Be-Found.
 
     The parser defines a set of keys that can be found in the radius of gyration tensor files.
@@ -16,7 +17,7 @@ class neo4Polymer_linPolSol_Rg_fileparser:
         Returns:
             None
         """
-        self.filename = fn
+        abstractParser.abstract_parser.__init__(self, fn)
         self.key_dict = {
             'feature_name': re.compile(r'# Feature(?P<feature_name>.*)\n'),
             'number_of_monomers': re.compile(r'#[ \t]+Number of monomers:[ \t](?P<number_of_monomers>\d+)\n'),
@@ -25,42 +26,6 @@ class neo4Polymer_linPolSol_Rg_fileparser:
         self.dataBlock_dict = {
             'line': re.compile(r'([+-]?\d+\.\d*?|\d\.\d+[eE][+-]?\d+?)[ \t]+([+-]?\d+\.\d+)[ \t\n]+')
         }
-
-    def _parse_line(self, line):
-        """ Apply the regex key dictionary on every line to find key value pairs
-
-        Parameters:
-            line (str): the actual line of the file or a string
-
-        Returns:
-            key and value of the regex dictionary defined in key_dict
-                if something was found
-            None, None otherwise
-        """
-        for key, rx in self.key_dict.items():
-            match = rx.search(line)
-            if match:
-                return key, match
-        # if there are no matches
-        return None, None
-
-    def _parse_data_block(self, line):
-        """ Apply the regex dictionary dataBlock_dict on every data block line to find key value pairs
-
-        Parameters:
-            line (str): the actual line of the data block or a string
-
-        Returns:
-            key and full match of the regex dictionary defined in dataBlock_dict
-                if something was found
-            None, None otherwise
-        """
-        for key, rx in self.dataBlock_dict.items():
-            match = rx.search(line)
-            if match:
-                return key, match
-        # if there are no matches
-        return None, None
 
     def parse_file(self):
         """Parse content of a given radius of gyration tensor file
@@ -90,7 +55,7 @@ class neo4Polymer_linPolSol_Rg_fileparser:
                     data.append([key, match.group(key)])
 
                 if key == 'feature_name':
-                    data.append([key, "Feature" + match.group(key)])
+                    data.append([key, "Feature" + str(match.group(key))])
 
                 if key == 'data_block':
                     # next line empty? if not terminate here
