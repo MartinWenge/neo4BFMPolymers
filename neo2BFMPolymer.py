@@ -1502,6 +1502,24 @@ class neo2BFMPolymer:
         # finally return True if no errors occurred
         return True
 
+    def _parse_line(self, line, key_dict):
+        """ Utility function to apply the regex key dictionary on every line to find key value pairs
+
+        Parameters:
+            line (str): the actual line of the file or a string
+
+        Returns:
+            key and value of the regex dictionary defined in key_dict
+                if something was found
+            None, None otherwise
+        """
+        for key, rx in key_dict.items():
+            match = rx.search(line)
+            if match:
+                return key, match
+        # if there are no matches
+        return None, None
+
     def addAnyRadiusOfGyrationFileToDatabase(self, simulationRunName, filename):
         '''High level user function to add nodes to the database by reading a radius of gyration file.
 
@@ -1539,28 +1557,26 @@ class neo2BFMPolymer:
         # read a few lines of the file to detect the file type and choose the parser
         # setup unique line dict
         parser_dict = {
-            "dendrimerRgTensorAnalyzer": re.compile(r'# Radius of Gyration Tensor of DendrimerRGTensorAnalyzer:[ \t]+([\w ]+)\n'),
-            "codendrimerRgTensor": re.compile(r'# ID[ \t]+Rg2[ \t]+Rgx2[ \t]+Rgy2[ \t]+Rgz2[ \t]+L1[ \t]+L2[ \t]+L3[ \t]+([\w<>]+)\n'),
-            "linearChainRgFile": re.compile(r'# mcs[ \t]+R_G Chain(\w+)\n')
+            "dendrimerRgTensorAnalyzer": re.compile(r'# Radius of Gyration Tensor of DendrimerRGTensorAnalyzer:[ \t]+(?P<dendrimerRgTensorAnalyzer>.*)\n'),
+            "codendrimerRgTensor": re.compile(r'# ID[ \t]+Rg2[ \t]+Rgx2[ \t]+Rgy2[ \t]+Rgz2[ \t]+L1[ \t]+L2[ \t]+(?P<codendrimerRgTensor>.*)[ \t]+<A>\n'),
+            "linearChainRgFile": re.compile(r'# mcs[ \t]+R_G Chain(?P<linearChainRgFile>.*)\n')
         }
 
         # read the first 30 lines of the file
         parser_identifier = None
         with open(filename, 'r') as file_object:
-            line = file_object.readline()
+            line = "start"
             counter = 0
             while line:
                 counter = counter +1
                 line = file_object.readline()
-                for key, rx in parser_dict.items():
-                    match = rx.search(line)
-                    if match:
-                        key = parser_identifier
-                        line = False
+                key, match = self._parse_line(line, parser_dict)
+                if (match is not None):
+                    parser_identifier = key
+                    line = False
                 if counter == 30:
                     line = False
 
-        breakpoint()
         if (parser_identifier is not None):
             if (parser_identifier == "dendrimerRgTensorAnalyzer"):
                 fileReader = singleDendrRgTParser.neo4Polymer_singleDendrimer_RgT_fileparser(filename)
@@ -1568,6 +1584,9 @@ class neo2BFMPolymer:
                 fileReader = codmucRgTParser.neo4Polymer_cudmuc_RgTensor_fileparser(filename)
             elif (parser_identifier == "linearChainRgFile"):
                 fileReader = linPolSolRgParser.neo4Polymer_linPolSol_Rg_fileparser(filename)
+            else:
+                print("WARNING: file {} does not match any parser routine!".format(filename))
+                return False
 
             # get the data-array using the @abstractmethod parse_file
             dataArray = fileReader.parse_file()
