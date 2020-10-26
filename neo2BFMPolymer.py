@@ -1533,7 +1533,7 @@ class neo2BFMPolymer:
             True if file content was added properly
             False if errors occur
         '''
-                # first check if the simulation run exists
+        # first check if the simulation run exists
         elementExists = self.graph.run("MATCH (elem:{}) WHERE elem.name=\"{}\" return elem".format(self.nodeType_simulationRun, simulationRunName)).data()
         if (len(elementExists) == 0):
             print("WARNING: {} does not exist. To add data from a BFM file, the simulationRun node must exist!".format(simulationRunName))
@@ -1568,7 +1568,7 @@ class neo2BFMPolymer:
             line = "start"
             counter = 0
             while line:
-                counter = counter +1
+                counter = counter + 1
                 line = file_object.readline()
                 key, match = self._parse_line(line, parser_dict)
                 if (match is not None):
@@ -1605,7 +1605,7 @@ class neo2BFMPolymer:
             if(numOfMonomers is not None):
                 self.addTotalNumberOfMonomersToSimulationRun(simulationRunName, int(numOfMonomers[0]))
             # ## ---------  total number of monomers  --------- ###
-            
+
             # ===================
             if ((parser_identifier == "dendrimerRgTensorAnalyzer") or (parser_identifier == "linearChainRgFile")):
                 # ## ---------  radius of gyration squared   --------- ###
@@ -1626,7 +1626,7 @@ class neo2BFMPolymer:
 
             # ===================
             if (parser_identifier == "codendrimerRgTensor"):
-                # ## ---------  radius of gyration squared   --------- ###  
+                # ## ---------  radius of gyration squared   --------- ###
                 dendrimer_rgSquaredKey = "dendrimer_Rg2"
                 dendrimer_rgSquared = self._findElementInKeyValueDataList(dendrimer_rgSquaredKey, dataArray)
                 graftedChains_rgSquaredKey = "graftedChains_Rg2"
@@ -1658,5 +1658,5 @@ class neo2BFMPolymer:
                 # ## ---------  Asphericity   --------- ###
 
         # finally return True if no errors occurred
-        return True 
+        return True
 #
