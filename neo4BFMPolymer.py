@@ -8,7 +8,7 @@ import neo4Polymer_linPolSol_RGFileParser as linPolSolRgParser
 import neo4Polymer_singleDendr_RGFileParser as singleDendrRgTParser
 
 
-class neo2BFMPolymer:
+class neo4BFMPolymer:
     """Python class to work on a neo4j graph data base with bfm polymer simulation data.
 
     The following node types are supported
