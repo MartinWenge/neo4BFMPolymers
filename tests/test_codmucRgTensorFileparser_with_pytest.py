@@ -5,10 +5,9 @@ import sys
 import inspect
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 parentdir = os.path.dirname(currentdir)
-sys.path.insert(0, parentdir)
-
-
-import neo4Polymer_codmuc_RGTensorFileParser as rgTParser
+libdir = "{parent}/{lib}".format(parent=parentdir, lib="neo4Polymer")
+sys.path.insert(0, libdir)
+import neo4Polymer
 
 
 def test_read_codmuc_micelle_g4_s4_m12_l4_e08_b128():
@@ -17,7 +16,7 @@ def test_read_codmuc_micelle_g4_s4_m12_l4_e08_b128():
     # the_ls = os.listdir()
     # print(cwd, the_ls)
 
-    testreader = rgTParser.neo4Polymer_cudmuc_RgTensor_fileparser("tests/codmuc_micelle_g4_s4_m12_l4_e0.8_b128_rg.dat")
+    testreader = neo4Polymer.neo4Polymer_cudmuc_RgTensor_fileparser("tests/codmuc_micelle_g4_s4_m12_l4_e0.8_b128_rg.dat")
     data_array = testreader.parse_file()
     # expected output:
     # [['feature_name', 'FeatureMoleculesIO'], ['feature_name', 'FeatureBox'],

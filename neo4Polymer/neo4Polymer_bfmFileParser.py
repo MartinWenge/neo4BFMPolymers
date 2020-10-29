@@ -1,8 +1,12 @@
 import re
-import neo4Polymer_abstractParser as abstractParser
+from .neo4Polymer_abstractParser import abstract_parser
+import logging
 
 
-class neo4Polymer_BFM_fileparser(abstractParser.abstract_parser):
+logger = logging.getLogger(__name__)
+
+
+class neo4Polymer_BFM_fileparser(abstract_parser):
     """ Read BFM-file headers written by the LeMonADE's AnalyzerWriteBFMFile.
 
     The parser defines a set of keys that can be found in the BFM files.
@@ -16,7 +20,7 @@ class neo4Polymer_BFM_fileparser(abstractParser.abstract_parser):
         Returns:
             None
         """
-        abstractParser.abstract_parser.__init__(self, fn)
+        abstract_parser.__init__(self, fn)
         self.key_dict = {
             'mcs': re.compile(r'!mcs=(?P<mcs>\d+)\n'),
             'number_of_monomers': re.compile(r'!number_of_monomers=(?P<number_of_monomers>\d+)\n'),
@@ -73,7 +77,7 @@ class neo4Polymer_BFM_fileparser(abstractParser.abstract_parser):
                     # find mcs to stop after header
                     if key == 'mcs':
                         data.append([key, match])
-                        print("reached mcs command, stop reading. last mcs= ", match)
+                        logger.info("reached mcs command, stop reading. last mcs= {}".format(match))
                         # does this finish the loop?
                         line = False
                         # close file

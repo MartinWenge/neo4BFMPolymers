@@ -5,10 +5,9 @@ import sys
 import inspect
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 parentdir = os.path.dirname(currentdir)
-sys.path.insert(0, parentdir)
-
-
-import neo4Polymer_bfmFileParser as bfmParser
+libdir = "{parent}/{lib}".format(parent=parentdir, lib="neo4Polymer")
+sys.path.insert(0, libdir)
+import neo4Polymer
 
 
 def test_read_codmuc_micelle_g3_s4_m27_l4_e08_b128():
@@ -17,7 +16,7 @@ def test_read_codmuc_micelle_g3_s4_m27_l4_e08_b128():
     # the_ls = os.listdir()
     # print(cwd, the_ls)
 
-    testreader = bfmParser.neo4Polymer_BFM_fileparser("tests/codmuc_micelle_g3_s4_m27_l4_e0.8_b128_1425000000_lastconfig.bfm")
+    testreader = neo4Polymer.neo4Polymer_BFM_fileparser("tests/codmuc_micelle_g3_s4_m27_l4_e0.8_b128_1425000000_lastconfig.bfm")
     data_array = testreader.parse_file()
     # expected output:
     # [['feature_name', 'FeatureMoleculesIO'], ['feature_name', 'FeatureBox'],
@@ -132,7 +131,7 @@ def test_read_codmuc_micelle_g3_s4_m27_l4_e08_b128():
 
 def test_read_RingMelt_N128_Phi05_Box128_EA5_EB17_MCS0_GPU():
 
-    testreader = bfmParser.neo4Polymer_BFM_fileparser("tests/RingMelt_N128_Phi05_Box128_EA5_EB17_MCS0_GPU.bfm")
+    testreader = neo4Polymer.neo4Polymer_BFM_fileparser("tests/RingMelt_N128_Phi05_Box128_EA5_EB17_MCS0_GPU.bfm")
     data_array = testreader.parse_file()
     # expected output:
     # [['feature_name', 'FeatureMoleculesIOUnsaveCheck'], ['feature_name', 'FeatureBox'],
@@ -274,7 +273,7 @@ def test_read_RingMelt_N128_Phi05_Box128_EA5_EB17_MCS0_GPU():
 
 
 def test_read_dend_chain_spring_g3_s4_l32_b64_d05_r012_k1():
-    testreader = bfmParser.neo4Polymer_BFM_fileparser("tests/dend_chain_spring_g3_s4_l32_b64_d05_r012_k1.0.bfm")
+    testreader = neo4Polymer.neo4Polymer_BFM_fileparser("tests/dend_chain_spring_g3_s4_l32_b64_d05_r012_k1.0.bfm")
     data_array = testreader.parse_file()
     # expected output:
     # [['feature_name', 'FeatureMoleculesIO'], ['feature_name', 'FeatureBox'],

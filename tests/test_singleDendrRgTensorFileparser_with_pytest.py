@@ -5,10 +5,9 @@ import sys
 import inspect
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 parentdir = os.path.dirname(currentdir)
-sys.path.insert(0, parentdir)
-
-
-import neo4Polymer_singleDendr_RGFileParser as rgTParser
+libdir = "{parent}/{lib}".format(parent=parentdir, lib="neo4Polymer")
+sys.path.insert(0, libdir)
+import neo4Polymer
 
 
 def test_read_dendr_g4_s4_b64_solv_e05():
@@ -17,7 +16,7 @@ def test_read_dendr_g4_s4_b64_solv_e05():
     # the_ls = os.listdir()
     # print(cwd, the_ls)
 
-    testreader = rgTParser.neo4Polymer_singleDendrimer_RgT_fileparser("tests/dendr_g4_s4_b64_solv_e05_rg_mol.dat")
+    testreader = neo4Polymer.neo4Polymer_singleDendrimer_RgT_fileparser("tests/dendr_g4_s4_b64_solv_e05_rg_mol.dat")
     data_array = testreader.parse_file()
     # expected output:
     # [['moleculePart', 'whole Molecule with endgroups'],

@@ -2,10 +2,14 @@ from datetime import date
 import os
 import socket
 import re
-import neo4Polymer_bfmFileParser as bfmParser
-import neo4Polymer_codmuc_RGTensorFileParser as codmucRgTParser
-import neo4Polymer_linPolSol_RGFileParser as linPolSolRgParser
-import neo4Polymer_singleDendr_RGFileParser as singleDendrRgTParser
+import logging
+from .neo4Polymer_bfmFileParser import neo4Polymer_BFM_fileparser
+from .neo4Polymer_codmuc_RGTensorFileParser import neo4Polymer_cudmuc_RgTensor_fileparser
+from .neo4Polymer_linPolSol_RGFileParser import neo4Polymer_linPolSol_Rg_fileparser
+from .neo4Polymer_singleDendr_RGFileParser import neo4Polymer_singleDendrimer_RgT_fileparser
+
+
+logger = logging.getLogger(__name__)
 
 
 class neo4BFMPolymer:
@@ -99,7 +103,7 @@ class neo4BFMPolymer:
         """
         elementExists = self.graph.run("MATCH (elem:{}) WHERE elem.name=\"{}\" return elem".format(nodeTypeName, nodeName)).data()
         if (len(elementExists) > 0):
-            print("WARNING: node of type {} with name {} already exists!".format(nodeTypeName, nodeName))
+            logger.debug("WARNING: node of type {} with name {} already exists!".format(nodeTypeName, nodeName))
             return False
         else:
             query = "CREATE (pl:{} {{ name: \'{}\', createdOn: \'{}\' }} )".format(nodeTypeName, nodeName, date.today())
@@ -140,7 +144,7 @@ class neo4BFMPolymer:
             query = "MATCH (sr:{} {{name:\"{}\"}})-[c:{}]-(res:{} {{name:\"{}\", value:\"{}\"}}) return type(c)".format(nodeTypeSimRun, nodeNameSimRun, connectionType, nodeTypeParameter, nodeNameParameter, nodeValueParameter)
             connectionExist = self.graph.evaluate(query)
             if(connectionExist == connectionType):
-                print("WARNING: Connection between {} with name {} and {} with name {} and value {} already exist.".format(nodeTypeSimRun, nodeNameSimRun, nodeTypeParameter, nodeNameParameter, nodeValueParameter))
+                logger.debug("WARNING: Connection between {} with name {} and {} with name {} and value {} already exist.".format(nodeTypeSimRun, nodeNameSimRun, nodeTypeParameter, nodeNameParameter, nodeValueParameter))
                 return False
 
             # if we are here, the connection can be established
@@ -152,7 +156,7 @@ class neo4BFMPolymer:
             return True
 
         else:
-            print("WARNING: node of type {} with name {} does not exist!".format(nodeTypeSimRun, nodeNameSimRun))
+            logger.debug("WARNING: node of type {} with name {} does not exist!".format(nodeTypeSimRun, nodeNameSimRun))
             return False
 
     def addResultSimulationRunGeneral(self, simulationRunName, resultName, resultString):
@@ -193,11 +197,11 @@ class neo4BFMPolymer:
                 return True
 
             else:
-                print("WARNING: node of type {} with name {} is already connected to {} node {}!".format(nodeTypeSimRun, nodeNameSimRun, nodeTypeResult, nodeNameResult))
+                logger.debug("WARNING: node of type {} with name {} is already connected to {} node {}!".format(nodeTypeSimRun, nodeNameSimRun, nodeTypeResult, nodeNameResult))
                 return False
 
         else:
-            print("WARNING: node of type {} with name {} does not exist!".format(nodeTypeSimRun, nodeNameSimRun))
+            logger.debug("WARNING: node of type {} with name {} does not exist!".format(nodeTypeSimRun, nodeNameSimRun))
             return False
 
     def connectParameterToFeatureGeneral(self, featureName, parameterName, parameterValue):
@@ -222,18 +226,18 @@ class neo4BFMPolymer:
 
         featureExist   = self.graph.evaluate("MATCH (elem:{}) WHERE elem.name=\"{}\" return elem.name".format(nodeTypeFeature, nodeNameFeature))
         if not (featureExist == nodeNameFeature):
-            print("WARNING: node of type {} with name {} does not exist! Cannot connect to Parameter".format(nodeTypeFeature, nodeNameFeature))
+            logger.debug("WARNING: node of type {} with name {} does not exist! Cannot connect to Parameter".format(nodeTypeFeature, nodeNameFeature))
             return False
 
         parameterExist = self.graph.evaluate("MATCH (elem:{}) WHERE elem.name=\"{}\" AND elem.value=\"{}\" return elem.name".format(nodeTypeParameter, nodeNameParamter, nodeValueParameter))
         if not (parameterExist == nodeNameParamter):
-            print("WARNING: node of type {} with name {} and value {} does not exist! Cannot connect to Feature".format(nodeTypeParameter, nodeNameParamter, nodeValueParameter))
+            logger.debug("WARNING: node of type {} with name {} and value {} does not exist! Cannot connect to Feature".format(nodeTypeParameter, nodeNameParamter, nodeValueParameter))
             return False
 
         connectExist = self.graph.evaluate("MATCH (feat:{} {{name:\"{}\"}})-[rel:{}]-(n:{} {{name:\"{}\", value:\"{}\"}}) return n.name".format(nodeTypeFeature, nodeNameFeature, connectionType, nodeTypeParameter, nodeNameParamter, nodeValueParameter))
         if (connectExist == nodeNameParamter):
             # connection already exist, print a message here?
-            print("{} with name {} already connected to {} with name {} and value {}".format(nodeTypeFeature, nodeNameFeature, nodeTypeParameter, nodeNameParamter, nodeValueParameter))
+            logger.debug("WARNING: {} with name {} already connected to {} with name {} and value {}".format(nodeTypeFeature, nodeNameFeature, nodeTypeParameter, nodeNameParamter, nodeValueParameter))
             return True
         else:
             # merge feature node with parameter node
@@ -320,7 +324,7 @@ class neo4BFMPolymer:
 
             return True
         else:
-            print("WARNING: node of type {} with name {} could not be added to {}".format(nodeTypeNameSimRun, nodeNameSimRun, nodeNameSimType))
+            logger.debug("WARNING: node of type {} with name {} could not be added to {}".format(nodeTypeNameSimRun, nodeNameSimRun, nodeNameSimType))
             return False
 
     def addPathToSimulationRun(self, simulationRunName, filePath):
@@ -344,11 +348,11 @@ class neo4BFMPolymer:
         # if SimulationRun node does not exist, complain and stop
         elementExists = self.graph.run("MATCH (elem:{}) WHERE elem.name=\"{}\" return elem".format(nodeTypeNameSimRun, nodeNameSimRun)).data()
         if (len(elementExists) < 1):
-            print("WARNING: node of type {} with name {} does not exist\ncannot add {}".format(nodeTypeNameSimRun, nodeNameSimRun, propertyName))
+            logger.debug("WARNING: node of type {} with name {} does not exist\ncannot add {}".format(nodeTypeNameSimRun, nodeNameSimRun, propertyName))
             return False
         # if SimulationRun node exists more than once, complain and stop
         if (len(elementExists) > 1):
-            print("WARNING: node of type {} with name {} exists more than once".format(nodeTypeNameSimRun, nodeNameSimRun))
+            logger.debug("WARNING: node of type {} with name {} exists more than once".format(nodeTypeNameSimRun, nodeNameSimRun))
             return False
 
         # get the node properties
@@ -362,7 +366,7 @@ class neo4BFMPolymer:
             # get list of property values from dict
             nodePropValuesList = list(nodePropDict.values())
             if(propertyValue in nodePropValuesList):
-                print("WARNING: path {} already exists in {}".format(propertyValue, nodeNameSimRun))
+                logger.debug("WARNING: path {} already exists in {}".format(propertyValue, nodeNameSimRun))
                 return False
 
             # add new paths by index like path_x
@@ -377,7 +381,7 @@ class neo4BFMPolymer:
                     # set current path property name to the variable passed to the cypher query
                     propertyName = pathPropertyName
                     pathNotAdded = False
-                    print("path {} is added to {} in property named {}".format(propertyValue, nodeNameSimRun, propertyName))
+                    logger.info("path {} is added to {} in property named {}".format(propertyValue, nodeNameSimRun, propertyName))
                     break
 
         query = '''MATCH (elem:{}) WHERE elem.name=\"{}\"
@@ -413,7 +417,7 @@ class neo4BFMPolymer:
         # if SimulationRun node does not exist, complain and stop
         elementExists = self.graph.run("MATCH (elem:{}) WHERE elem.name=\"{}\" return elem".format(nodeTypeNameSimRun, nodeNameSimRun)).data()
         if (len(elementExists) < 1):
-            print("WARNING: node of type {} with name {} does not exist\ncannot connect to {}".format(nodeTypeNameSimRun, nodeNameSimRun, nodeNameFeature))
+            logger.debug("WARNING: node of type {} with name {} does not exist\ncannot connect to {}".format(nodeTypeNameSimRun, nodeNameSimRun, nodeNameFeature))
             return False
 
         # if feature does not exist, add it
@@ -432,7 +436,7 @@ class neo4BFMPolymer:
             return True
         # otherwise print a message, but return True
         else:
-            print("WARNING: {} with name {} was already connected to {} with name {}".format(nodeTypeFeature, nodeNameFeature, nodeTypeNameSimRun, nodeNameSimRun))
+            logger.debug("WARNING: {} with name {} was already connected to {} with name {}".format(nodeTypeFeature, nodeNameFeature, nodeTypeNameSimRun, nodeNameSimRun))
             return True
 
     def connectSimulationToPolymer(self, polymerName, simulationName):
@@ -475,15 +479,15 @@ class neo4BFMPolymer:
                     return True
 
                 else:
-                    print("WARNING: connection of type {} between {} and {} already exist!".format(connectionType, nodeName1, nodeName2))
+                    logger.debug("WARNING: connection of type {} between {} and {} already exist!".format(connectionType, nodeName1, nodeName2))
                     return False
 
             else:
-                print("WARNING: node of type {} with name {} does not exist!".format(nodeType2, nodeName2))
+                logger.debug("WARNING: node of type {} with name {} does not exist!".format(nodeType2, nodeName2))
                 return False
 
         else:
-            print("WARNING: node of type {} with name {} does not exist!".format(nodeType1, nodeName1))
+            logger.debug("WARNING: node of type {} with name {} does not exist!".format(nodeType1, nodeName1))
             return False
 
     # ## -------------- # ## -------------- # ## -------------- ###
@@ -963,7 +967,7 @@ class neo4BFMPolymer:
         '''
         result = [dataArrayElement[1] for dataArrayElement in keyValueDataList if dataArrayElement[0] == search]
         if result == []:  # or if not result
-            print("{} not found".format(search))
+            logger.debug("WARNING: {} not found".format(search))
             return None
         else:
             return result
@@ -982,7 +986,7 @@ class neo4BFMPolymer:
         # first check if the simulation run exists
         elementExists = self.graph.run("MATCH (elem:{}) WHERE elem.name=\"{}\" return elem".format(self.nodeType_simulationRun, simulationRunName)).data()
         if (len(elementExists) == 0):
-            print("WARNING: {} does not exist. To add data from a BFM file, the simulationRun node must exist!".format(simulationRunName))
+            logger.debug("WARNING: {} does not exist. To add data from a BFM file, the simulationRun node must exist!".format(simulationRunName))
             return False
 
         # check if file exists
@@ -992,16 +996,16 @@ class neo4BFMPolymer:
             checkForBackslashes = pathToBfmFile.replace('\\', '/')
             if (pathToBfmFile != checkForBackslashes):
                 pathToBfmFile = checkForBackslashes
-                print("WARNING: replaced backslashes in filepath to slashes: {}".format(pathToBfmFile))
+                logger.debug("WARNING: replaced backslashes in filepath to slashes: {}".format(pathToBfmFile))
 
             # now you may add it to the simulationRun node
             self.addPathToSimulationRun(simulationRunName, pathToBfmFile)
         else:
-            print("WARNING: file {} does not exist!".format(filename))
+            logger.debug("WARNING: file {} does not exist!".format(filename))
             return False
 
         # start the bfm file reader
-        fileReader = bfmParser.neo4Polymer_BFM_fileparser(filename)
+        fileReader = neo4Polymer_BFM_fileparser(filename)
 
         # get the data-array
         dataArray = fileReader.parse_file()
@@ -1059,7 +1063,7 @@ class neo4BFMPolymer:
 
             # sanity check: box size should be defined for all dimensions
             if ((boxSizeX is None) or (boxSizeX is None) or (boxSizeX is None)):
-                print("WARNING: boxsize is not defined for all dimensions. Box Size node is NOT added")
+                logger.debug("WARNING: boxsize is not defined for all dimensions. Box Size node is NOT added")
             else:
                 self.addBoxSizeToSimulationRun(simulationRunName, boxSizeX, boxSizeY, boxSizeZ)
                 parameterName = "BoxSize"
@@ -1077,7 +1081,7 @@ class neo4BFMPolymer:
 
             # sanity check: periodicity should be defined for all dimensions
             if ((periodicityX is None) or (periodicityY is None) or (periodicityZ is None)):
-                print("WARNING: periodicity is not defined for all dimensions. Periodicity node is NOT added")
+                logger.debug("WARNING: periodicity is not defined for all dimensions. Periodicity node is NOT added")
             else:
                 self.addPeriodicityToSimulationRun(simulationRunName, periodicityX, periodicityY, periodicityZ)
                 parameterName = "Periodicity"
@@ -1098,7 +1102,7 @@ class neo4BFMPolymer:
                     if(self.addNNInteractionToSimulationRun(simulationRunName, parameterValue)):
                         self.connectParameterToFeatureGeneral(featureName, parameterName, parameterValue)
                 else:
-                    print("WARNING: nn_interaction contains more than one value: {}\nTry to add all values, more Warnings may pop up".format(nn_intertaction))
+                    logger.debug("WARNING: nn_interaction contains more than one value: {}\nTry to add all values, more Warnings may pop up".format(nn_intertaction))
                     for nn in nn_intertaction:
                         parameterValue = self._float_prec3_format(nn)
                         if(self.addNNInteractionToSimulationRun(simulationRunName, parameterValue)):
@@ -1117,7 +1121,7 @@ class neo4BFMPolymer:
                     if(self.addNNInteractionToSimulationRun(simulationRunName, parameterValue)):
                         self.connectParameterToFeatureGeneral(featureName, parameterName, parameterValue)
                 else:
-                    print("WARNING: nn_interaction contains more than one value: {}\nTry to add all values, more Warnings may pop up".format(nn_intertaction))
+                    logger.debug("WARNING: nn_interaction contains more than one value: {}\nTry to add all values, more Warnings may pop up".format(nn_intertaction))
                     for nn in nn_intertaction:
                         parameterValue = self._float_prec3_format(nn)
                         if(self.addNNInteractionToSimulationRun(simulationRunName, parameterValue)):
@@ -1136,7 +1140,7 @@ class neo4BFMPolymer:
                     if(self.addNNInteractionToSimulationRun(simulationRunName, parameterValue)):
                         self.connectParameterToFeatureGeneral(featureName, parameterName, parameterValue)
                 else:
-                    print("WARNING: nn_interaction contains more than one value: {}\nTry to add all values, more Warnings may pop up".format(nn_intertaction))
+                    logger.debug("WARNING: nn_interaction contains more than one value: {}\nTry to add all values, more Warnings may pop up".format(nn_intertaction))
                     for nn in nn_intertaction:
                         parameterValue = nn
                         if(self.addNNInteractionToSimulationRun(simulationRunName, parameterValue)):
@@ -1293,7 +1297,7 @@ class neo4BFMPolymer:
         # first check if the simulation run exists
         elementExists = self.graph.run("MATCH (elem:{}) WHERE elem.name=\"{}\" return elem".format(self.nodeType_simulationRun, simulationRunName)).data()
         if (len(elementExists) == 0):
-            print("WARNING: {} does not exist. To add data from a BFM file, the simulationRun node must exist!".format(simulationRunName))
+            logger.debug("WARNING: {} does not exist. To add data from a BFM file, the simulationRun node must exist!".format(simulationRunName))
             return False
 
         # check if file exists
@@ -1303,16 +1307,16 @@ class neo4BFMPolymer:
             checkForBackslashes = pathToRgTFile.replace('\\', '/')
             if (pathToRgTFile != checkForBackslashes):
                 pathToRgTFile = checkForBackslashes
-                print("WARNING: replaced backslashes in filepath to slashes: {}".format(pathToRgTFile))
+                logger.debug("WARNING: replaced backslashes in filepath to slashes: {}".format(pathToRgTFile))
 
             # now you may add it to the simulationRun node
             self.addPathToSimulationRun(simulationRunName, pathToRgTFile)
         else:
-            print("WARNING: file {} does not exist!".format(filename))
+            logger.debug("WARNING: file {} does not exist!".format(filename))
             return False
 
         # start the bfm file reader
-        fileReader = codmucRgTParser.neo4Polymer_cudmuc_RgTensor_fileparser(filename)
+        fileReader = neo4Polymer_cudmuc_RgTensor_fileparser(filename)
 
         # get the data-array
         dataArray = fileReader.parse_file()
@@ -1384,7 +1388,7 @@ class neo4BFMPolymer:
         # first check if the simulation run exists
         elementExists = self.graph.run("MATCH (elem:{}) WHERE elem.name=\"{}\" return elem".format(self.nodeType_simulationRun, simulationRunName)).data()
         if (len(elementExists) == 0):
-            print("WARNING: {} does not exist. To add data from a BFM file, the simulationRun node must exist!".format(simulationRunName))
+            logger.debug("WARNING: {} does not exist. To add data from a BFM file, the simulationRun node must exist!".format(simulationRunName))
             return False
 
         # check if file exists
@@ -1394,16 +1398,16 @@ class neo4BFMPolymer:
             checkForBackslashes = pathToRgFile.replace('\\', '/')
             if (pathToRgFile != checkForBackslashes):
                 pathToRgFile = checkForBackslashes
-                print("WARNING: replaced backslashes in filepath to slashes: {}".format(pathToRgFile))
+                logger.debug("WARNING: replaced backslashes in filepath to slashes: {}".format(pathToRgFile))
 
             # now you may add it to the simulationRun node
             self.addPathToSimulationRun(simulationRunName, pathToRgFile)
         else:
-            print("WARNING: file {} does not exist!".format(filename))
+            logger.debug("WARNING: file {} does not exist!".format(filename))
             return False
 
         # start the bfm file reader
-        fileReader = linPolSolRgParser.neo4Polymer_linPolSol_Rg_fileparser(filename)
+        fileReader = neo4Polymer_linPolSol_Rg_fileparser(filename)
 
         # get the data-array
         dataArray = fileReader.parse_file()
@@ -1444,7 +1448,7 @@ class neo4BFMPolymer:
         # first check if the simulation run exists
         elementExists = self.graph.run("MATCH (elem:{}) WHERE elem.name=\"{}\" return elem".format(self.nodeType_simulationRun, simulationRunName)).data()
         if (len(elementExists) == 0):
-            print("WARNING: {} does not exist. To add data from a BFM file, the simulationRun node must exist!".format(simulationRunName))
+            logger.debug("WARNING: {} does not exist. To add data from a BFM file, the simulationRun node must exist!".format(simulationRunName))
             return False
 
         # check if file exists
@@ -1454,16 +1458,16 @@ class neo4BFMPolymer:
             checkForBackslashes = pathToRgFile.replace('\\', '/')
             if (pathToRgFile != checkForBackslashes):
                 pathToRgFile = checkForBackslashes
-                print("WARNING: replaced backslashes in filepath to slashes: {}".format(pathToRgFile))
+                logger.debug("WARNING: replaced backslashes in filepath to slashes: {}".format(pathToRgFile))
 
             # now you may add it to the simulationRun node
             self.addPathToSimulationRun(simulationRunName, pathToRgFile)
         else:
-            print("WARNING: file {} does not exist!".format(filename))
+            logger.debug("WARNING: file {} does not exist!".format(filename))
             return False
 
         # start the bfm file reader
-        fileReader = singleDendrRgTParser.neo4Polymer_singleDendrimer_RgT_fileparser(filename)
+        fileReader = neo4Polymer_singleDendrimer_RgT_fileparser(filename)
 
         # get the data-array
         dataArray = fileReader.parse_file()
@@ -1479,7 +1483,7 @@ class neo4BFMPolymer:
         #     if (len(moleculePart) == 1):
         #         currentMoleculePart = moleculePart[0]
         #     else:
-        #         print("WARNING: rg tensor file contains more than one molecule part")
+        #         logger.debug("WARNING: rg tensor file contains more than one molecule part")
         #         # self.addFeatureToSimulationRun(simulationRunName, feature)
         # ## ---------  molecule part  --------- ###
 
@@ -1536,7 +1540,7 @@ class neo4BFMPolymer:
         # first check if the simulation run exists
         elementExists = self.graph.run("MATCH (elem:{}) WHERE elem.name=\"{}\" return elem".format(self.nodeType_simulationRun, simulationRunName)).data()
         if (len(elementExists) == 0):
-            print("WARNING: {} does not exist. To add data from a BFM file, the simulationRun node must exist!".format(simulationRunName))
+            logger.debug("WARNING: {} does not exist. To add data from a BFM file, the simulationRun node must exist!".format(simulationRunName))
             return False
 
         # check if file exists
@@ -1546,12 +1550,12 @@ class neo4BFMPolymer:
             checkForBackslashes = pathToRgFile.replace('\\', '/')
             if (pathToRgFile != checkForBackslashes):
                 pathToRgFile = checkForBackslashes
-                print("WARNING: replaced backslashes in filepath to slashes: {}".format(pathToRgFile))
+                logger.debug("WARNING: replaced backslashes in filepath to slashes: {}".format(pathToRgFile))
 
             # now you may add it to the simulationRun node
             self.addPathToSimulationRun(simulationRunName, pathToRgFile)
         else:
-            print("WARNING: file {} does not exist!".format(filename))
+            logger.debug("WARNING: file {} does not exist!".format(filename))
             return False
 
         # read a few lines of the file to detect the file type and choose the parser
@@ -1579,13 +1583,13 @@ class neo4BFMPolymer:
 
         if (parser_identifier is not None):
             if (parser_identifier == "dendrimerRgTensorAnalyzer"):
-                fileReader = singleDendrRgTParser.neo4Polymer_singleDendrimer_RgT_fileparser(filename)
+                fileReader = neo4Polymer_singleDendrimer_RgT_fileparser(filename)
             elif (parser_identifier == "codendrimerRgTensor"):
-                fileReader = codmucRgTParser.neo4Polymer_cudmuc_RgTensor_fileparser(filename)
+                fileReader = neo4Polymer_cudmuc_RgTensor_fileparser(filename)
             elif (parser_identifier == "linearChainRgFile"):
-                fileReader = linPolSolRgParser.neo4Polymer_linPolSol_Rg_fileparser(filename)
+                fileReader = neo4Polymer_linPolSol_Rg_fileparser(filename)
             else:
-                print("WARNING: file {} does not match any parser routine!".format(filename))
+                logger.debug("WARNING: file {} does not match any parser routine!".format(filename))
                 return False
 
             # get the data-array using the @abstractmethod parse_file

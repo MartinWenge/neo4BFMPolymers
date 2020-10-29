@@ -1,3 +1,9 @@
+import logging
+
+
+logger = logging.getLogger(__name__)
+
+
 class neo4PolymerRequests:
     """Python class to perform search queries on a neo4j graph data base with polymer simulation data.
 
@@ -54,8 +60,8 @@ class neo4PolymerRequests:
         if polymerExist is None:
             # if polymer does not exist print a list of all polymers
             query = "MATCH(polymer:{}) RETURN polymer.name".format(self.nodeType_polymer)
-            print("WARNING: {} does not exist in database. Following polymers are available:".format(polymerName))
-            print(self.graph.run(query).to_data_frame().values)
+            logger.debug("WARNING: {} does not exist in database. Following polymers are available:".format(polymerName))
+            logger.warning(self.graph.run(query).to_data_frame().values)
             return None
         else:
             query = "MATCH (polymer:{} {{name:\"{}\"}})-[:{}]-(simProject:{}) RETURN simProject.name, polymer.name".format(
@@ -65,7 +71,7 @@ class neo4PolymerRequests:
                 self.nodeType_SimulationProject)
             result = self.graph.run(query)
             if result is None:
-                print("WARNING: no simulation projects connected to {}: {}".format(self.nodeType_polymer, polymerName))
+                logger.debug("WARNING: no simulation projects connected to {}: {}".format(self.nodeType_polymer, polymerName))
                 return None
             else:
                 return result.to_data_frame()
@@ -85,8 +91,8 @@ class neo4PolymerRequests:
         if simProjectExist is None:
             # if simulationProject does not exist print a list of all simulationProjects
             query = "MATCH(simProject:{}) RETURN simProject.name".format(self.nodeType_SimulationProject)
-            print("WARNING: {} does not exist in database. Following SimulationProjects are available:".format(simProjectName))
-            print(self.graph.run(query).to_data_frame().values)
+            logger.debug("WARNING: {} does not exist in database. Following SimulationProjects are available:".format(simProjectName))
+            logger.warning(self.graph.run(query).to_data_frame().values)
             return None
         else:
             query = "MATCH (simProject:{} {{name:\"{}\"}})-[:{}]-(simRun:{}) RETURN simRun.name, simRun.createdOn, simRun.path, simProject.name".format(
@@ -96,7 +102,7 @@ class neo4PolymerRequests:
                 self.nodeType_simulationRun)
             result = self.graph.run(query)
             if result is None:
-                print("WARNING: no simulation projects connected to {}: {}".format(self.nodeType_SimulationProject, simProjectName))
+                logger.debug("WARNING: no simulation projects connected to {}: {}".format(self.nodeType_SimulationProject, simProjectName))
                 return None
             else:
                 return result.to_data_frame()

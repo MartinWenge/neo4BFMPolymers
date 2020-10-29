@@ -5,10 +5,9 @@ import sys
 import inspect
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 parentdir = os.path.dirname(currentdir)
-sys.path.insert(0, parentdir)
-
-
-import neo4Polymer_linPolSol_RGFileParser as rgFileParser
+libdir = "{parent}/{lib}".format(parent=parentdir, lib="neo4Polymer")
+sys.path.insert(0, libdir)
+import neo4Polymer
 
 
 def test_read_linchains_n32_b64_d024():
@@ -17,7 +16,7 @@ def test_read_linchains_n32_b64_d024():
     # the_ls = os.listdir()
     # print(cwd, the_ls)
 
-    testreader = rgFileParser.neo4Polymer_linPolSol_Rg_fileparser("tests/linchains_n32_b64_d0.24_rg.dat")
+    testreader = neo4Polymer.neo4Polymer_linPolSol_Rg_fileparser("tests/linchains_n32_b64_d0.24_rg.dat")
     data_array = testreader.parse_file()
     # expected output:
     # [['feature_name', 'FeatureMoleculesIO'], ['feature_name', 'FeatureBox'],

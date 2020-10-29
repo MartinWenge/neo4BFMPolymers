@@ -1,9 +1,13 @@
 import re
 import numpy as np
-import neo4Polymer_abstractParser as abstractParser
+from .neo4Polymer_abstractParser import abstract_parser
+import logging
 
 
-class neo4Polymer_singleDendrimer_RgT_fileparser(abstractParser.abstract_parser):
+logger = logging.getLogger(__name__)
+
+
+class neo4Polymer_singleDendrimer_RgT_fileparser(abstract_parser):
     """ Read Rg files written by LeMonADE's Analyzer-To-Be-Found.
 
     The parser defines a set of keys that can be found in the radius of gyration tensor files.
@@ -17,7 +21,7 @@ class neo4Polymer_singleDendrimer_RgT_fileparser(abstractParser.abstract_parser)
         Returns:
             None
         """
-        abstractParser.abstract_parser.__init__(self, fn)
+        abstract_parser.__init__(self, fn)
         self.key_dict = {
             'moleculePart': re.compile(r'# Radius of Gyration Tensor of DendrimerRGTensorAnalyzer:[ \t]+(?P<moleculePart>([\w ]+))\n'),
             'data_block': re.compile(r'# time[ \t]+(\w+)[ \t]+(\w+)[ \t]+(\w+)[ \t]+(\w+)[ \t]+(\w+)[ \t]+(\w+)[ \t]+([\w<>]+)\n')
@@ -77,7 +81,7 @@ class neo4Polymer_singleDendrimer_RgT_fileparser(abstractParser.abstract_parser)
             if (rg_np_array.shape[0] > 100):
                 startIdx = 80
             else:
-                print("WARNING: Number of samples in RGFile parser less than 60 (", rg_np_array.size, "), use 3/4 of all samples for the mean.")
+                logger.debug("WARNING: Number of samples in RGFile parser less than 60 (", rg_np_array.size, "), use 3/4 of all samples for the mean.")
                 startIdx = int(rg_np_array.shape[0] / 4)
 
             data.append(["mean_rg", np.mean(rg_np_array[startIdx, 0])])
