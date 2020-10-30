@@ -1,0 +1,25 @@
+# 
+# registered features: 
+# 
+# FeatureMoleculesIO
+# 	Number of monomers: 64
+# 	max connectivity: 4
+# FeatureBox
+# FeatureBondset<FastBondset>
+# FeatureLatticePowerOfTwo<bool>
+# FeatureExcludedVolumeSc<FeatureLatticePowerOfTwo<bool> >
+# FeatureWall
+# FeatureAttributes
+# FeatureFixedMonomers
+# 
+# not registered features: 
+# 
+# #!version
+# endoffile
+# 
+# # Analyzer force
+# # total numer of tries= 4999001
+# # idxMonomer	n-	n+	log(n-/n+)
+
+0	1.90538e+06	3.09388e+06	-0.484747	
+63	2.55914e+06	2.4783e+06	0.032098	
