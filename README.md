@@ -37,6 +37,7 @@ The following python libraries are used:
 * [sys](https://docs.python.org/3/library/sys.html)
 * [socket](https://docs.python.org/3/library/socket.html)
 * [inspect](https://docs.python.org/3/library/inspect.html)
+* [logging](https://docs.python.org/3/library/logging.html)
 
 ## Tests
 
@@ -45,8 +46,9 @@ The following python libraries are used:
 
 ## Linter
 
-* the python linter [flake8](https://pypi.org/project/flake8/) is used with the call `flake8 --statistics --ignore E501,E402,E221`
+* the python linter [flake8](https://pypi.org/project/flake8/) is used with the call `flake8 --statistics --ignore E501,E402,E221,F401`
 * -> the maximum length of the line and imports at the very beginning of the -py files are ignored
+* -> imported but unused warning from `__init__.py` files
 * the linter is not included in the CI pipeline, but it is recommended to use it
 
 ## Continous integration
