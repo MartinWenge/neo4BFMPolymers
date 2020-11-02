@@ -47,5 +47,5 @@ def test_read_dendr_g4_s4_b64_solv_e05():
         errors.append("dendrimer_Rgx2 is {} != {}".format(result, expected))
 
     # assert no error message has been registered, else print messages
-    assert not errors, "errors occured:\n{}".format("\n".join(errors))
+    assert not errors, "errors occurred:\n{}".format("\n".join(errors))
 #

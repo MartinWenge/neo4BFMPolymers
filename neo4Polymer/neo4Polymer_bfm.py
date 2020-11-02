@@ -7,6 +7,7 @@ from .neo4Polymer_bfmFileParser import neo4Polymer_BFM_fileparser
 from .neo4Polymer_codmuc_RGTensorFileParser import neo4Polymer_cudmuc_RgTensor_fileparser
 from .neo4Polymer_linPolSol_RGFileParser import neo4Polymer_linPolSol_Rg_fileparser
 from .neo4Polymer_singleDendr_RGFileParser import neo4Polymer_singleDendrimer_RgT_fileparser
+from .neo4Polymer_bondLengthFileParser import neo4Polymer_bondLengthFileParser
 
 
 logger = logging.getLogger(__name__)
@@ -951,6 +952,23 @@ class neo4BFMPolymer:
 
         return self.addResultSimulationRunGeneral(nodeNameSimRun, nodeName, nodeValue)
 
+    def addResultBondLength(self, simulationRunName, bl):
+        '''Adding a Result node with the mean bond length of a particular SimulationRun.
+
+        Parameters:
+            simulationRunName (str): name of the SimulationRun node
+            bl (float): mean bond length
+
+        Returns:
+            exit code (bool): True if connection was added, False if connection already exists
+                              or SimulationRun node does not exist
+        '''
+        nodeNameSimRun = simulationRunName
+        nodeName       = "BondLength"
+        nodeValue      = str(bl)
+
+        return self.addResultSimulationRunGeneral(nodeNameSimRun, nodeName, nodeValue)
+
     # ## -------------- # ## -------------- # ## -------------- ###
     # ## ----------   complex functions with helpers  --------- ###
     # ## -------------- # ## -------------- # ## -------------- ###
@@ -1283,228 +1301,228 @@ class neo4BFMPolymer:
         # finally return True if no errors occurred
         return True
 
-    def addCODMUCRgTensorFileToDatabase(self, simulationRunName, filename):
-        '''High level user function to add nodes to the database by reading a radius of gyration Tensor file, using the neo4Polymer_codmuc_RGTensorFileParser.
+    # def addCODMUCRgTensorFileToDatabase(self, simulationRunName, filename):
+    #     '''High level user function to add nodes to the database by reading a radius of gyration Tensor file, using the neo4Polymer_codmuc_RGTensorFileParser.
 
-        Parameters:
-            simulationRunName (str): name of the simulationRun
-            filename (str): name of the radius of gyration tensor file
+    #     Parameters:
+    #         simulationRunName (str): name of the simulationRun
+    #         filename (str): name of the radius of gyration tensor file
 
-        Returns:
-            True if file content was added properly
-            False if errors occur
-        '''
-        # first check if the simulation run exists
-        elementExists = self.graph.run("MATCH (elem:{}) WHERE elem.name=\"{}\" return elem".format(self.nodeType_simulationRun, simulationRunName)).data()
-        if (len(elementExists) == 0):
-            logger.debug("WARNING: {} does not exist. To add data from a BFM file, the simulationRun node must exist!".format(simulationRunName))
-            return False
+    #     Returns:
+    #         True if file content was added properly
+    #         False if errors occur
+    #     '''
+    #     # first check if the simulation run exists
+    #     elementExists = self.graph.run("MATCH (elem:{}) WHERE elem.name=\"{}\" return elem".format(self.nodeType_simulationRun, simulationRunName)).data()
+    #     if (len(elementExists) == 0):
+    #         logger.debug("WARNING: {} does not exist. To add data from a BFM file, the simulationRun node must exist!".format(simulationRunName))
+    #         return False
 
-        # check if file exists
-        if(os.path.isfile(filename)):
-            # get full path to filename WITHOUT backslashes!
-            pathToRgTFile = "{}: {}".format(socket.gethostname(), os.path.abspath(filename))
-            checkForBackslashes = pathToRgTFile.replace('\\', '/')
-            if (pathToRgTFile != checkForBackslashes):
-                pathToRgTFile = checkForBackslashes
-                logger.debug("WARNING: replaced backslashes in filepath to slashes: {}".format(pathToRgTFile))
+    #     # check if file exists
+    #     if(os.path.isfile(filename)):
+    #         # get full path to filename WITHOUT backslashes!
+    #         pathToRgTFile = "{}: {}".format(socket.gethostname(), os.path.abspath(filename))
+    #         checkForBackslashes = pathToRgTFile.replace('\\', '/')
+    #         if (pathToRgTFile != checkForBackslashes):
+    #             pathToRgTFile = checkForBackslashes
+    #             logger.debug("WARNING: replaced backslashes in filepath to slashes: {}".format(pathToRgTFile))
 
-            # now you may add it to the simulationRun node
-            self.addPathToSimulationRun(simulationRunName, pathToRgTFile)
-        else:
-            logger.debug("WARNING: file {} does not exist!".format(filename))
-            return False
+    #         # now you may add it to the simulationRun node
+    #         self.addPathToSimulationRun(simulationRunName, pathToRgTFile)
+    #     else:
+    #         logger.debug("WARNING: file {} does not exist!".format(filename))
+    #         return False
 
-        # start the bfm file reader
-        fileReader = neo4Polymer_cudmuc_RgTensor_fileparser(filename)
+    #     # start the bfm file reader
+    #     fileReader = neo4Polymer_cudmuc_RgTensor_fileparser(filename)
 
-        # get the data-array
-        dataArray = fileReader.parse_file()
+    #     # get the data-array
+    #     dataArray = fileReader.parse_file()
 
-        # extract a keywords from the data array
-        # start with features to connect the parameters!
+    #     # extract a keywords from the data array
+    #     # start with features to connect the parameters!
 
-        # ## ---------  features  --------- ###
-        featureKey = "feature_name"
-        featureList = self._findElementInKeyValueDataList(featureKey, dataArray)
-        if(featureList is not None):
-            for feature in featureList:
-                self.addFeatureToSimulationRun(simulationRunName, feature)
-        # ## ---------  features  --------- ###
+    #     # ## ---------  features  --------- ###
+    #     featureKey = "feature_name"
+    #     featureList = self._findElementInKeyValueDataList(featureKey, dataArray)
+    #     if(featureList is not None):
+    #         for feature in featureList:
+    #             self.addFeatureToSimulationRun(simulationRunName, feature)
+    #     # ## ---------  features  --------- ###
 
-        # ## ---------  total number of monomers  --------- ###
-        numOfMonomersKey = "number_of_monomers"
-        numOfMonomers = self._findElementInKeyValueDataList(numOfMonomersKey, dataArray)
-        if(numOfMonomers is not None):
-            self.addTotalNumberOfMonomersToSimulationRun(simulationRunName, int(numOfMonomers[0]))
-        # ## ---------  total number of monomers  --------- ###
+    #     # ## ---------  total number of monomers  --------- ###
+    #     numOfMonomersKey = "number_of_monomers"
+    #     numOfMonomers = self._findElementInKeyValueDataList(numOfMonomersKey, dataArray)
+    #     if(numOfMonomers is not None):
+    #         self.addTotalNumberOfMonomersToSimulationRun(simulationRunName, int(numOfMonomers[0]))
+    #     # ## ---------  total number of monomers  --------- ###
 
-        # ## ---------  radius of gyration squared   --------- ###
-        dendrimer_rgSquaredKey = "dendrimer_Rg2"
-        dendrimer_rgSquared = self._findElementInKeyValueDataList(dendrimer_rgSquaredKey, dataArray)
-        graftedChains_rgSquaredKey = "graftedChains_Rg2"
-        graftedChains_rgSquared = self._findElementInKeyValueDataList(graftedChains_rgSquaredKey, dataArray)
-        totalMolecule_rgSquaredKey = "totalMolecule_Rg2"
-        totalMolecule_rgSquared = self._findElementInKeyValueDataList(totalMolecule_rgSquaredKey, dataArray)
-        if((dendrimer_rgSquared is not None) and (graftedChains_rgSquared is not None) and (totalMolecule_rgSquared is not None)):
-            formatedRgString = "[[{},{}],[{},{}],[{},{}]]".format(
-                "Rg^2 total codendrimer", self._float_prec4_format(float(totalMolecule_rgSquared[0])),
-                "Rg^2 dendritic core", self._float_prec4_format(float(dendrimer_rgSquared[0])),
-                "Rg^2 grafted chains", self._float_prec4_format(float(graftedChains_rgSquared[0]))
-            )
-            self.addResultRadiusOfGyration(simulationRunName, formatedRgString)
-        # ## ---------  radius of gyration squared   --------- ###
+    #     # ## ---------  radius of gyration squared   --------- ###
+    #     dendrimer_rgSquaredKey = "dendrimer_Rg2"
+    #     dendrimer_rgSquared = self._findElementInKeyValueDataList(dendrimer_rgSquaredKey, dataArray)
+    #     graftedChains_rgSquaredKey = "graftedChains_Rg2"
+    #     graftedChains_rgSquared = self._findElementInKeyValueDataList(graftedChains_rgSquaredKey, dataArray)
+    #     totalMolecule_rgSquaredKey = "totalMolecule_Rg2"
+    #     totalMolecule_rgSquared = self._findElementInKeyValueDataList(totalMolecule_rgSquaredKey, dataArray)
+    #     if((dendrimer_rgSquared is not None) and (graftedChains_rgSquared is not None) and (totalMolecule_rgSquared is not None)):
+    #         formatedRgString = "[[{},{}],[{},{}],[{},{}]]".format(
+    #             "Rg^2 total codendrimer", self._float_prec4_format(float(totalMolecule_rgSquared[0])),
+    #             "Rg^2 dendritic core", self._float_prec4_format(float(dendrimer_rgSquared[0])),
+    #             "Rg^2 grafted chains", self._float_prec4_format(float(graftedChains_rgSquared[0]))
+    #         )
+    #         self.addResultRadiusOfGyration(simulationRunName, formatedRgString)
+    #     # ## ---------  radius of gyration squared   --------- ###
 
-        # ## ---------  Asphericity   --------- ###
-        dendrimer_asphericityKey = "dendrimer_<A>"
-        dendrimer_asphericity = self._findElementInKeyValueDataList(dendrimer_asphericityKey, dataArray)
-        graftedChains_asphericityKey = "graftedChains_<A>"
-        graftedChains_asphericity = self._findElementInKeyValueDataList(graftedChains_asphericityKey, dataArray)
-        totalMolecule_asphericityKey = "totalMolecule_<A>"
-        totalMolecule_asphericity = self._findElementInKeyValueDataList(totalMolecule_asphericityKey, dataArray)
-        if((dendrimer_asphericity is not None) and (graftedChains_asphericity is not None) and (totalMolecule_asphericity is not None)):
-            formatedAString = "[[{},{}],[{},{}],[{},{}]]".format(
-                "<A> total codendrimer", self._float_prec4_format(float(totalMolecule_asphericity[0])),
-                "<A> dendritic core", self._float_prec4_format(float(dendrimer_asphericity[0])),
-                "<A> grafted chains", self._float_prec4_format(float(graftedChains_asphericity[0]))
-            )
-            self.addResultAsphericity(simulationRunName, formatedAString)
-        # ## ---------  Asphericity   --------- ###
+    #     # ## ---------  Asphericity   --------- ###
+    #     dendrimer_asphericityKey = "dendrimer_<A>"
+    #     dendrimer_asphericity = self._findElementInKeyValueDataList(dendrimer_asphericityKey, dataArray)
+    #     graftedChains_asphericityKey = "graftedChains_<A>"
+    #     graftedChains_asphericity = self._findElementInKeyValueDataList(graftedChains_asphericityKey, dataArray)
+    #     totalMolecule_asphericityKey = "totalMolecule_<A>"
+    #     totalMolecule_asphericity = self._findElementInKeyValueDataList(totalMolecule_asphericityKey, dataArray)
+    #     if((dendrimer_asphericity is not None) and (graftedChains_asphericity is not None) and (totalMolecule_asphericity is not None)):
+    #         formatedAString = "[[{},{}],[{},{}],[{},{}]]".format(
+    #             "<A> total codendrimer", self._float_prec4_format(float(totalMolecule_asphericity[0])),
+    #             "<A> dendritic core", self._float_prec4_format(float(dendrimer_asphericity[0])),
+    #             "<A> grafted chains", self._float_prec4_format(float(graftedChains_asphericity[0]))
+    #         )
+    #         self.addResultAsphericity(simulationRunName, formatedAString)
+    #     # ## ---------  Asphericity   --------- ###
 
-        # finally return True if no errors occurred
-        return True
+    #     # finally return True if no errors occurred
+    #     return True
 
-    def addLinearPolymerSolutionRgFileToDatabase(self, simulationRunName, filename):
-        '''High level user function to add nodes to the database by reading a radius of gyration file, using the neo4Polymer_linPolSol_Rg_fileparser.
+    # def addLinearPolymerSolutionRgFileToDatabase(self, simulationRunName, filename):
+    #     '''High level user function to add nodes to the database by reading a radius of gyration file, using the neo4Polymer_linPolSol_Rg_fileparser.
 
-        Parameters:
-            simulationRunName (str): name of the simulationRun
-            filename (str): name of the radius of gyration file
+    #     Parameters:
+    #         simulationRunName (str): name of the simulationRun
+    #         filename (str): name of the radius of gyration file
 
-        Returns:
-            True if file content was added properly
-            False if errors occur
-        '''
-        # first check if the simulation run exists
-        elementExists = self.graph.run("MATCH (elem:{}) WHERE elem.name=\"{}\" return elem".format(self.nodeType_simulationRun, simulationRunName)).data()
-        if (len(elementExists) == 0):
-            logger.debug("WARNING: {} does not exist. To add data from a BFM file, the simulationRun node must exist!".format(simulationRunName))
-            return False
+    #     Returns:
+    #         True if file content was added properly
+    #         False if errors occur
+    #     '''
+    #     # first check if the simulation run exists
+    #     elementExists = self.graph.run("MATCH (elem:{}) WHERE elem.name=\"{}\" return elem".format(self.nodeType_simulationRun, simulationRunName)).data()
+    #     if (len(elementExists) == 0):
+    #         logger.debug("WARNING: {} does not exist. To add data from a BFM file, the simulationRun node must exist!".format(simulationRunName))
+    #         return False
 
-        # check if file exists
-        if(os.path.isfile(filename)):
-            # get full path to filename WITHOUT backslashes!
-            pathToRgFile = "{}: {}".format(socket.gethostname(), os.path.abspath(filename))
-            checkForBackslashes = pathToRgFile.replace('\\', '/')
-            if (pathToRgFile != checkForBackslashes):
-                pathToRgFile = checkForBackslashes
-                logger.debug("WARNING: replaced backslashes in filepath to slashes: {}".format(pathToRgFile))
+    #     # check if file exists
+    #     if(os.path.isfile(filename)):
+    #         # get full path to filename WITHOUT backslashes!
+    #         pathToRgFile = "{}: {}".format(socket.gethostname(), os.path.abspath(filename))
+    #         checkForBackslashes = pathToRgFile.replace('\\', '/')
+    #         if (pathToRgFile != checkForBackslashes):
+    #             pathToRgFile = checkForBackslashes
+    #             logger.debug("WARNING: replaced backslashes in filepath to slashes: {}".format(pathToRgFile))
 
-            # now you may add it to the simulationRun node
-            self.addPathToSimulationRun(simulationRunName, pathToRgFile)
-        else:
-            logger.debug("WARNING: file {} does not exist!".format(filename))
-            return False
+    #         # now you may add it to the simulationRun node
+    #         self.addPathToSimulationRun(simulationRunName, pathToRgFile)
+    #     else:
+    #         logger.debug("WARNING: file {} does not exist!".format(filename))
+    #         return False
 
-        # start the bfm file reader
-        fileReader = neo4Polymer_linPolSol_Rg_fileparser(filename)
+    #     # start the bfm file reader
+    #     fileReader = neo4Polymer_linPolSol_Rg_fileparser(filename)
 
-        # get the data-array
-        dataArray = fileReader.parse_file()
+    #     # get the data-array
+    #     dataArray = fileReader.parse_file()
 
-        # extract a keywords from the data array
-        # start with features to connect the parameters!
+    #     # extract a keywords from the data array
+    #     # start with features to connect the parameters!
 
-        # ## ---------  features  --------- ###
-        featureKey = "feature_name"
-        featureList = self._findElementInKeyValueDataList(featureKey, dataArray)
-        if(featureList is not None):
-            for feature in featureList:
-                self.addFeatureToSimulationRun(simulationRunName, feature)
-        # ## ---------  features  --------- ###
+    #     # ## ---------  features  --------- ###
+    #     featureKey = "feature_name"
+    #     featureList = self._findElementInKeyValueDataList(featureKey, dataArray)
+    #     if(featureList is not None):
+    #         for feature in featureList:
+    #             self.addFeatureToSimulationRun(simulationRunName, feature)
+    #     # ## ---------  features  --------- ###
 
-        # ## ---------  radius of gyration squared   --------- ###
-        mean_rgSquaredKey = "mean_rg"
-        mean_rgSquared = self._findElementInKeyValueDataList(mean_rgSquaredKey, dataArray)
-        if(mean_rgSquared is not None):
-            formatedRgString = "[Rg^2, {}]".format(self._float_prec4_format(mean_rgSquared[0]))
-            self.addResultRadiusOfGyration(simulationRunName, formatedRgString)
-        # ## ---------  radius of gyration squared   --------- ###
+    #     # ## ---------  radius of gyration squared   --------- ###
+    #     mean_rgSquaredKey = "mean_rg"
+    #     mean_rgSquared = self._findElementInKeyValueDataList(mean_rgSquaredKey, dataArray)
+    #     if(mean_rgSquared is not None):
+    #         formatedRgString = "[Rg^2, {}]".format(self._float_prec4_format(mean_rgSquared[0]))
+    #         self.addResultRadiusOfGyration(simulationRunName, formatedRgString)
+    #     # ## ---------  radius of gyration squared   --------- ###
 
-        # finally return True if no errors occurred
-        return True
+    #     # finally return True if no errors occurred
+    #     return True
 
-    def addSingleDendrimerRgTFileToDatabase(self, simulationRunName, filename):
-        '''High level user function to add nodes to the database by reading a radius of gyration tensor file, using the neo4Polymer_singleDendr_RGFileParser.
+    # def addSingleDendrimerRgTFileToDatabase(self, simulationRunName, filename):
+    #     '''High level user function to add nodes to the database by reading a radius of gyration tensor file, using the neo4Polymer_singleDendr_RGFileParser.
 
-        Parameters:
-            simulationRunName (str): name of the simulationRun
-            filename (str): name of the radius of gyration file
+    #     Parameters:
+    #         simulationRunName (str): name of the simulationRun
+    #         filename (str): name of the radius of gyration file
 
-        Returns:
-            True if file content was added properly
-            False if errors occur
-        '''
-        # first check if the simulation run exists
-        elementExists = self.graph.run("MATCH (elem:{}) WHERE elem.name=\"{}\" return elem".format(self.nodeType_simulationRun, simulationRunName)).data()
-        if (len(elementExists) == 0):
-            logger.debug("WARNING: {} does not exist. To add data from a BFM file, the simulationRun node must exist!".format(simulationRunName))
-            return False
+    #     Returns:
+    #         True if file content was added properly
+    #         False if errors occur
+    #     '''
+    #     # first check if the simulation run exists
+    #     elementExists = self.graph.run("MATCH (elem:{}) WHERE elem.name=\"{}\" return elem".format(self.nodeType_simulationRun, simulationRunName)).data()
+    #     if (len(elementExists) == 0):
+    #         logger.debug("WARNING: {} does not exist. To add data from a BFM file, the simulationRun node must exist!".format(simulationRunName))
+    #         return False
 
-        # check if file exists
-        if(os.path.isfile(filename)):
-            # get full path to filename WITHOUT backslashes!
-            pathToRgFile = "{}: {}".format(socket.gethostname(), os.path.abspath(filename))
-            checkForBackslashes = pathToRgFile.replace('\\', '/')
-            if (pathToRgFile != checkForBackslashes):
-                pathToRgFile = checkForBackslashes
-                logger.debug("WARNING: replaced backslashes in filepath to slashes: {}".format(pathToRgFile))
+    #     # check if file exists
+    #     if(os.path.isfile(filename)):
+    #         # get full path to filename WITHOUT backslashes!
+    #         pathToRgFile = "{}: {}".format(socket.gethostname(), os.path.abspath(filename))
+    #         checkForBackslashes = pathToRgFile.replace('\\', '/')
+    #         if (pathToRgFile != checkForBackslashes):
+    #             pathToRgFile = checkForBackslashes
+    #             logger.debug("WARNING: replaced backslashes in filepath to slashes: {}".format(pathToRgFile))
 
-            # now you may add it to the simulationRun node
-            self.addPathToSimulationRun(simulationRunName, pathToRgFile)
-        else:
-            logger.debug("WARNING: file {} does not exist!".format(filename))
-            return False
+    #         # now you may add it to the simulationRun node
+    #         self.addPathToSimulationRun(simulationRunName, pathToRgFile)
+    #     else:
+    #         logger.debug("WARNING: file {} does not exist!".format(filename))
+    #         return False
 
-        # start the bfm file reader
-        fileReader = neo4Polymer_singleDendrimer_RgT_fileparser(filename)
+    #     # start the bfm file reader
+    #     fileReader = neo4Polymer_singleDendrimer_RgT_fileparser(filename)
 
-        # get the data-array
-        dataArray = fileReader.parse_file()
+    #     # get the data-array
+    #     dataArray = fileReader.parse_file()
 
-        # extract a keywords from the data array
-        # start with features to connect the parameters!
+    #     # extract a keywords from the data array
+    #     # start with features to connect the parameters!
 
-        # ## ---------  molecule part  --------- ###
-        #    --------- not jet used .. ---------   #
-        # moleculePartKey = "moleculePart"
-        # moleculePart = self._findElementInKeyValueDataList(moleculePartKey, dataArray)
-        # if(moleculePart is not None):
-        #     if (len(moleculePart) == 1):
-        #         currentMoleculePart = moleculePart[0]
-        #     else:
-        #         logger.debug("WARNING: rg tensor file contains more than one molecule part")
-        #         # self.addFeatureToSimulationRun(simulationRunName, feature)
-        # ## ---------  molecule part  --------- ###
+    #     # ## ---------  molecule part  --------- ###
+    #     #    --------- not jet used .. ---------   #
+    #     # moleculePartKey = "moleculePart"
+    #     # moleculePart = self._findElementInKeyValueDataList(moleculePartKey, dataArray)
+    #     # if(moleculePart is not None):
+    #     #     if (len(moleculePart) == 1):
+    #     #         currentMoleculePart = moleculePart[0]
+    #     #     else:
+    #     #         logger.debug("WARNING: rg tensor file contains more than one molecule part")
+    #     #         # self.addFeatureToSimulationRun(simulationRunName, feature)
+    #     # ## ---------  molecule part  --------- ###
 
-        # ## ---------  radius of gyration squared   --------- ###
-        mean_rgSquaredKey = "mean_rg"
-        mean_rgSquared = self._findElementInKeyValueDataList(mean_rgSquaredKey, dataArray)
-        if(mean_rgSquared is not None):
-            formatedRgString = "[Rg^2, {}]".format(self._float_prec4_format(mean_rgSquared[0]))
-            self.addResultRadiusOfGyration(simulationRunName, formatedRgString)
-        # ## ---------  radius of gyration squared   --------- ###
+    #     # ## ---------  radius of gyration squared   --------- ###
+    #     mean_rgSquaredKey = "mean_rg"
+    #     mean_rgSquared = self._findElementInKeyValueDataList(mean_rgSquaredKey, dataArray)
+    #     if(mean_rgSquared is not None):
+    #         formatedRgString = "[Rg^2, {}]".format(self._float_prec4_format(mean_rgSquared[0]))
+    #         self.addResultRadiusOfGyration(simulationRunName, formatedRgString)
+    #     # ## ---------  radius of gyration squared   --------- ###
 
-        # ## ---------  asphericity   --------- ###
-        mean_aspericityKey = "mean_A"
-        mean_aspericity = self._findElementInKeyValueDataList(mean_aspericityKey, dataArray)
-        if(mean_aspericity is not None):
-            formatedRgString = "[<A>, {}]".format(self._float_prec4_format(mean_aspericity[0]))
-            self.addResultRadiusOfGyration(simulationRunName, formatedRgString)
-        # ## ---------  asphericity   --------- ###
+    #     # ## ---------  asphericity   --------- ###
+    #     mean_aspericityKey = "mean_A"
+    #     mean_aspericity = self._findElementInKeyValueDataList(mean_aspericityKey, dataArray)
+    #     if(mean_aspericity is not None):
+    #         formatedRgString = "[<A>, {}]".format(self._float_prec4_format(mean_aspericity[0]))
+    #         self.addResultRadiusOfGyration(simulationRunName, formatedRgString)
+    #     # ## ---------  asphericity   --------- ###
 
-        # finally return True if no errors occurred
-        return True
+    #     # finally return True if no errors occurred
+    #     return True
 
     def _parse_line(self, line, key_dict):
         """ Utility function to apply the regex key dictionary on every line to find key value pairs
@@ -1523,6 +1541,101 @@ class neo4BFMPolymer:
                 return key, match
         # if there are no matches
         return None, None
+
+    def addAnyBondLengthFileToDatabase(self, simulationRunName, filename):
+        '''High level user function to add nodes to the database by reading a bond length file (neo4Polymer_bondLengthFileParser).
+
+        Parameters:
+            simulationRunName (str): name of the simulationRun
+            filename (str): name of the bond length
+
+        Returns:
+            True if file content was added properly
+            False if errors occur
+        '''
+        # first check if the simulation run exists
+        elementExists = self.graph.run("MATCH (elem:{}) WHERE elem.name=\"{}\" return elem".format(self.nodeType_simulationRun, simulationRunName)).data()
+        if (len(elementExists) == 0):
+            logger.debug("WARNING: {} does not exist. To add data from a BFM file, the simulationRun node must exist!".format(simulationRunName))
+            return False
+
+        # check if file exists
+        if(os.path.isfile(filename)):
+            # get full path to filename WITHOUT backslashes!
+            pathToBLFile = "{}: {}".format(socket.gethostname(), os.path.abspath(filename))
+            checkForBackslashes = pathToBLFile.replace('\\', '/')
+            if (pathToBLFile != checkForBackslashes):
+                pathToBLFile = checkForBackslashes
+                logger.debug("WARNING: replaced backslashes in filepath to slashes: {}".format(pathToBLFile))
+
+            # now you may add it to the simulationRun node
+            self.addPathToSimulationRun(simulationRunName, pathToBLFile)
+        else:
+            logger.debug("WARNING: file {} does not exist!".format(filename))
+            return False
+
+        # read a few lines of the file to detect the file type and choose the parser
+        # setup unique line dict
+        parser_dict = {
+            "threeColumn_mcs_frame_mean": re.compile(r'# mcs[ \t]+BL frame[ \t]+BL averaged\n')
+        }
+
+        # read the first 30 lines of the file
+        parser_identifier = None
+        with open(filename, 'r') as file_object:
+            line = "start"
+            counter = 0
+            while line:
+                counter = counter + 1
+                line = file_object.readline()
+                key, match = self._parse_line(line, parser_dict)
+                if (match is not None):
+                    parser_identifier = key
+                    line = False
+                if counter == 30:
+                    line = False
+
+        if (parser_identifier is not None):
+            if (parser_identifier == "threeColumn_mcs_frame_mean"):
+                fileReader = neo4Polymer_bondLengthFileParser(filename)
+            else:
+                logger.debug("WARNING: file {} does not match any parser routine!".format(filename))
+                return False
+
+            # instantiate the file reader
+            fileReader = neo4Polymer_bondLengthFileParser(filename)
+
+            # get the data-array
+            dataArray = fileReader.parse_file()
+
+            # extract a keywords from the data array
+            # ## ---------  features  --------- ###
+            featureKey = "feature_name"
+            featureList = self._findElementInKeyValueDataList(featureKey, dataArray)
+            if(featureList is not None):
+                for feature in featureList:
+                    self.addFeatureToSimulationRun(simulationRunName, feature)
+            # ## ---------  features  --------- ###
+            # ## ---------  total number of monomers  --------- ###
+            numOfMonomersKey = "number_of_monomers"
+            numOfMonomers = self._findElementInKeyValueDataList(numOfMonomersKey, dataArray)
+            if(numOfMonomers is not None):
+                self.addTotalNumberOfMonomersToSimulationRun(simulationRunName, int(numOfMonomers[0]))
+            # ## ---------  total number of monomers  --------- ###
+            # ## ---------  bond length squared   --------- ###
+            mean_blSquaredKey = "mean_bl"
+            mean_blSquared = self._findElementInKeyValueDataList(mean_blSquaredKey, dataArray)
+            if(mean_blSquared is not None):
+                formatedBlString = "[b^2, {}]".format(self._float_prec4_format(mean_blSquared[0]))
+                self.addResultBondLength(simulationRunName, formatedBlString)
+            # ## ---------  bond length squared   --------- ###
+
+            # finally return True if no errors occurred
+            return True
+        
+        else:
+            logger.debug("WARNING: file {} did not match any bond length file signature in the first {} lines!".format(filename, counter))
+            return False
 
     def addAnyRadiusOfGyrationFileToDatabase(self, simulationRunName, filename):
         '''High level user function to add nodes to the database by reading a radius of gyration file.

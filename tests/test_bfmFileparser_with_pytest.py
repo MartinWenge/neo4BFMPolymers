@@ -125,7 +125,7 @@ def test_read_codmuc_micelle_g3_s4_m27_l4_e08_b128():
         errors.append("mcs is {} != {}".format(result, expected))
 
     # assert no error message has been registered, else print messages
-    assert not errors, "errors occured:\n{}".format("\n".join(errors))
+    assert not errors, "errors occurred:\n{}".format("\n".join(errors))
 #
 
 

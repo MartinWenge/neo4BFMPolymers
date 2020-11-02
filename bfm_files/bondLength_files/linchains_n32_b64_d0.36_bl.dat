@@ -15,6 +15,8 @@
 # 
 # radius of gyration
 # mcs	R_G Dendrimer 	R_G Chains
+# mean squared bond length
+# mcs	BL frame 	BL averaged
 
 1e+06	7.14928	7.14928	
 1.1e+06	7.14946	7.14937	

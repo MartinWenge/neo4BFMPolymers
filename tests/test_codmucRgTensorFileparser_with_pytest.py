@@ -154,5 +154,5 @@ def test_read_codmuc_micelle_g4_s4_m12_l4_e08_b128():
         errors.append("totalMolecule_<A> is {} != {}".format(result, expected))
 
     # assert no error message has been registered, else print messages
-    assert not errors, "errors occured:\n{}".format("\n".join(errors))
+    assert not errors, "errors occurred:\n{}".format("\n".join(errors))
 #

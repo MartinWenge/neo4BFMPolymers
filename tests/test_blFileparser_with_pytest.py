@@ -10,18 +10,18 @@ sys.path.insert(0, libdir)
 import neo4Polymer
 
 
-def test_read_linchains_n32_b64_d024():
+def test_read_dendr_g4_s4_b64_solv_e05_bl():
     # tell me, where we are ...
     # cwd = os.getcwd()
     # the_ls = os.listdir()
     # print(cwd, the_ls)
 
-    testreader = neo4Polymer.neo4Polymer_linPolSol_Rg_fileparser("tests/linchains_n32_b64_d0.24_rg.dat")
+    testreader = neo4Polymer.neo4Polymer_bondLengthFileParser("tests/dendr_g4_s4_b64_solv_e05_bl.dat")
     data_array = testreader.parse_file()
     # expected output:
     # [['feature_name', 'FeatureMoleculesIO'], ['feature_name', 'FeatureBox'],
     # ['feature_name', 'FeatureBondset<FastBondset>'], ['feature_name', 'FeatureAttributes'],
-    # ['mean_rg', 58.890774]]
+    # ['mean_bl', xxx]]
 
     # perform various test in a single function with an error array
     # https://stackoverflow.com/questions/39896716/can-i-perform-multiple-assertions-in-pytest
@@ -43,7 +43,7 @@ def test_read_linchains_n32_b64_d024():
     expected = 'FeatureBondset<FastBondset>'
     if not (expected in result):
         errors.append("feature is {} != {}".format(result, expected))
-    expected = 'FeatureAttributes'
+    expected = 'FeatureAttributes<int>'
     if not (expected in result):
         errors.append("feature is {} != {}".format(result, expected))
 
@@ -51,16 +51,16 @@ def test_read_linchains_n32_b64_d024():
     search = "number_of_monomers"
     result = int([dataArrayElement[1] for dataArrayElement in data_array if dataArrayElement[0] == search][0])
     # result = int([dataArrayElement[1] for dataArrayElement in data_array if dataArrayElement[0] == search][0])
-    expected = 7840
+    expected = 181
     if not (result == expected):
         errors.append("number of monomers is {} != {}".format(result, expected))
 
-    # ##  ---- rg results linear chains ----  ## #
-    search = "mean_rg"
+    # ##  ---- squared  results ----  ## #
+    search = "mean_bl"
     result = float([dataArrayElement[1] for dataArrayElement in data_array if dataArrayElement[0] == search][0])
-    expected = 58.890774
-    if not (abs(result - expected) < 0.00001):
-        errors.append("mean_Rg2 is {} != {}".format(result, expected))
+    expected = 6.9235
+    if not (abs(result - expected) < 0.0001):
+        errors.append("mean_bl^2 is {} != {}".format(result, expected))
 
     # assert no error message has been registered, else print messages
     assert not errors, "errors occurred:\n{}".format("\n".join(errors))
