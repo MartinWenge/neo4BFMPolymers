@@ -25,7 +25,7 @@ setup(
         'Topic :: Database',
         'Topic :: Scientific/Engineering',
         'Intended Audience :: Science/Research'
-    ]
+    ],
     python_requires='>=3.0',
     install_requires=[
         'datetime',
