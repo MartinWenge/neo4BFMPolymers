@@ -8,6 +8,7 @@ from .neo4Polymer_codmuc_RGTensorFileParser import neo4Polymer_cudmuc_RgTensor_f
 from .neo4Polymer_linPolSol_RGFileParser import neo4Polymer_linPolSol_Rg_fileparser
 from .neo4Polymer_singleDendr_RGFileParser import neo4Polymer_singleDendrimer_RgT_fileparser
 from .neo4Polymer_bondLengthFileParser import neo4Polymer_bondLengthFileParser
+from .neo4Polymer_bottlebrush_RGFileParser import neo4Polymer_bottlebrush_RgFileParser
 
 
 logger = logging.getLogger(__name__)
@@ -855,6 +856,69 @@ class neo4BFMPolymer:
 
         return self.addParameterSimulationRunGeneral(nodeNameSimRun, nodeName, nodeValue)
 
+    def addNumberOfBackboneMonomersToSimulationRun(self, simulationRunName, nMonoBackbone):
+        '''Connect a SimulationRun node with a Parameter node of name NumberOfBackboneMonomers with the given value.
+
+        A parameter node with name NumberOfBackboneMonomers contains a value nMonoBackbone
+        that can be connected to any SimulationRun node that uses this parameter.
+        If the NumberOfBackboneMonomers node does not exist, it is created and then connected to the SimulationRun.
+
+        Parameters:
+            simulationRunName (str): name of the SimulationRun node
+            nMonoBackbone (int): number of monomers per chain in tendomer system
+
+        Returns:
+            exit code (bool): True if connection was added, False if connection already exists
+                              or SimulationRun node does not exist
+        '''
+        nodeNameSimRun = simulationRunName
+        nodeName       = "NumberOfBackboneMonomers"
+        nodeValue      = "{}".format(int(nMonoBackbone))
+
+        return self.addParameterSimulationRunGeneral(nodeNameSimRun, nodeName, nodeValue)
+
+    def addNumberOfSideChainMonomersToSimulationRun(self, simulationRunName, nMonoSideChain):
+        '''Connect a SimulationRun node with a Parameter node of name NumberOfSideChainMonomers with the given value.
+
+        A parameter node with name NumberOfSideChainMonomers contains a value nMonoSideChain
+        that can be connected to any SimulationRun node that uses this parameter.
+        If the NumberOfSideChainMonomers node does not exist, it is created and then connected to the SimulationRun.
+
+        Parameters:
+            simulationRunName (str): name of the SimulationRun node
+            nMonoSideChain (int): number of monomers per chain in tendomer system
+
+        Returns:
+            exit code (bool): True if connection was added, False if connection already exists
+                              or SimulationRun node does not exist
+        '''
+        nodeNameSimRun = simulationRunName
+        nodeName       = "NumberOfSideChainMonomers"
+        nodeValue      = "{}".format(int(nMonoSideChain))
+
+        return self.addParameterSimulationRunGeneral(nodeNameSimRun, nodeName, nodeValue)
+
+    def addGraftingDensityToSimulationRun(self, simulationRunName, gd):
+        '''Connect a SimulationRun node with a Parameter node of name GraftingDensity with the given value.
+
+        A parameter node with name GraftingDensity contains a value gd
+        that can be connected to any SimulationRun node that uses this parameter.
+        If the GraftingDensity node does not exist, it is created and then connected to the SimulationRun.
+
+        Parameters:
+            simulationRunName (str): name of the SimulationRun node
+            gd (int): number of monomers per chain in tendomer system
+
+        Returns:
+            exit code (bool): True if connection was added, False if connection already exists
+                              or SimulationRun node does not exist
+        '''
+        nodeNameSimRun = simulationRunName
+        nodeName       = "GraftingDensity"
+        nodeValue      = "{}".format(self._float_prec4_format(gd))
+
+        return self.addParameterSimulationRunGeneral(nodeNameSimRun, nodeName, nodeValue)
+
     def addSpringConstantToSimulationRun(self, simulationRunName, springConst):
         '''Connect a SimulationRun node with a Parameter node of name NumberOfMonomersPerChain with the given value.
 
@@ -1301,229 +1365,6 @@ class neo4BFMPolymer:
         # finally return True if no errors occurred
         return True
 
-    # def addCODMUCRgTensorFileToDatabase(self, simulationRunName, filename):
-    #     '''High level user function to add nodes to the database by reading a radius of gyration Tensor file, using the neo4Polymer_codmuc_RGTensorFileParser.
-
-    #     Parameters:
-    #         simulationRunName (str): name of the simulationRun
-    #         filename (str): name of the radius of gyration tensor file
-
-    #     Returns:
-    #         True if file content was added properly
-    #         False if errors occur
-    #     '''
-    #     # first check if the simulation run exists
-    #     elementExists = self.graph.run("MATCH (elem:{}) WHERE elem.name=\"{}\" return elem".format(self.nodeType_simulationRun, simulationRunName)).data()
-    #     if (len(elementExists) == 0):
-    #         logger.debug("WARNING: {} does not exist. To add data from a BFM file, the simulationRun node must exist!".format(simulationRunName))
-    #         return False
-
-    #     # check if file exists
-    #     if(os.path.isfile(filename)):
-    #         # get full path to filename WITHOUT backslashes!
-    #         pathToRgTFile = "{}: {}".format(socket.gethostname(), os.path.abspath(filename))
-    #         checkForBackslashes = pathToRgTFile.replace('\\', '/')
-    #         if (pathToRgTFile != checkForBackslashes):
-    #             pathToRgTFile = checkForBackslashes
-    #             logger.debug("WARNING: replaced backslashes in filepath to slashes: {}".format(pathToRgTFile))
-
-    #         # now you may add it to the simulationRun node
-    #         self.addPathToSimulationRun(simulationRunName, pathToRgTFile)
-    #     else:
-    #         logger.debug("WARNING: file {} does not exist!".format(filename))
-    #         return False
-
-    #     # start the bfm file reader
-    #     fileReader = neo4Polymer_cudmuc_RgTensor_fileparser(filename)
-
-    #     # get the data-array
-    #     dataArray = fileReader.parse_file()
-
-    #     # extract a keywords from the data array
-    #     # start with features to connect the parameters!
-
-    #     # ## ---------  features  --------- ###
-    #     featureKey = "feature_name"
-    #     featureList = self._findElementInKeyValueDataList(featureKey, dataArray)
-    #     if(featureList is not None):
-    #         for feature in featureList:
-    #             self.addFeatureToSimulationRun(simulationRunName, feature)
-    #     # ## ---------  features  --------- ###
-
-    #     # ## ---------  total number of monomers  --------- ###
-    #     numOfMonomersKey = "number_of_monomers"
-    #     numOfMonomers = self._findElementInKeyValueDataList(numOfMonomersKey, dataArray)
-    #     if(numOfMonomers is not None):
-    #         self.addTotalNumberOfMonomersToSimulationRun(simulationRunName, int(numOfMonomers[0]))
-    #     # ## ---------  total number of monomers  --------- ###
-
-    #     # ## ---------  radius of gyration squared   --------- ###
-    #     dendrimer_rgSquaredKey = "dendrimer_Rg2"
-    #     dendrimer_rgSquared = self._findElementInKeyValueDataList(dendrimer_rgSquaredKey, dataArray)
-    #     graftedChains_rgSquaredKey = "graftedChains_Rg2"
-    #     graftedChains_rgSquared = self._findElementInKeyValueDataList(graftedChains_rgSquaredKey, dataArray)
-    #     totalMolecule_rgSquaredKey = "totalMolecule_Rg2"
-    #     totalMolecule_rgSquared = self._findElementInKeyValueDataList(totalMolecule_rgSquaredKey, dataArray)
-    #     if((dendrimer_rgSquared is not None) and (graftedChains_rgSquared is not None) and (totalMolecule_rgSquared is not None)):
-    #         formatedRgString = "[[{},{}],[{},{}],[{},{}]]".format(
-    #             "Rg^2 total codendrimer", self._float_prec4_format(float(totalMolecule_rgSquared[0])),
-    #             "Rg^2 dendritic core", self._float_prec4_format(float(dendrimer_rgSquared[0])),
-    #             "Rg^2 grafted chains", self._float_prec4_format(float(graftedChains_rgSquared[0]))
-    #         )
-    #         self.addResultRadiusOfGyration(simulationRunName, formatedRgString)
-    #     # ## ---------  radius of gyration squared   --------- ###
-
-    #     # ## ---------  Asphericity   --------- ###
-    #     dendrimer_asphericityKey = "dendrimer_<A>"
-    #     dendrimer_asphericity = self._findElementInKeyValueDataList(dendrimer_asphericityKey, dataArray)
-    #     graftedChains_asphericityKey = "graftedChains_<A>"
-    #     graftedChains_asphericity = self._findElementInKeyValueDataList(graftedChains_asphericityKey, dataArray)
-    #     totalMolecule_asphericityKey = "totalMolecule_<A>"
-    #     totalMolecule_asphericity = self._findElementInKeyValueDataList(totalMolecule_asphericityKey, dataArray)
-    #     if((dendrimer_asphericity is not None) and (graftedChains_asphericity is not None) and (totalMolecule_asphericity is not None)):
-    #         formatedAString = "[[{},{}],[{},{}],[{},{}]]".format(
-    #             "<A> total codendrimer", self._float_prec4_format(float(totalMolecule_asphericity[0])),
-    #             "<A> dendritic core", self._float_prec4_format(float(dendrimer_asphericity[0])),
-    #             "<A> grafted chains", self._float_prec4_format(float(graftedChains_asphericity[0]))
-    #         )
-    #         self.addResultAsphericity(simulationRunName, formatedAString)
-    #     # ## ---------  Asphericity   --------- ###
-
-    #     # finally return True if no errors occurred
-    #     return True
-
-    # def addLinearPolymerSolutionRgFileToDatabase(self, simulationRunName, filename):
-    #     '''High level user function to add nodes to the database by reading a radius of gyration file, using the neo4Polymer_linPolSol_Rg_fileparser.
-
-    #     Parameters:
-    #         simulationRunName (str): name of the simulationRun
-    #         filename (str): name of the radius of gyration file
-
-    #     Returns:
-    #         True if file content was added properly
-    #         False if errors occur
-    #     '''
-    #     # first check if the simulation run exists
-    #     elementExists = self.graph.run("MATCH (elem:{}) WHERE elem.name=\"{}\" return elem".format(self.nodeType_simulationRun, simulationRunName)).data()
-    #     if (len(elementExists) == 0):
-    #         logger.debug("WARNING: {} does not exist. To add data from a BFM file, the simulationRun node must exist!".format(simulationRunName))
-    #         return False
-
-    #     # check if file exists
-    #     if(os.path.isfile(filename)):
-    #         # get full path to filename WITHOUT backslashes!
-    #         pathToRgFile = "{}: {}".format(socket.gethostname(), os.path.abspath(filename))
-    #         checkForBackslashes = pathToRgFile.replace('\\', '/')
-    #         if (pathToRgFile != checkForBackslashes):
-    #             pathToRgFile = checkForBackslashes
-    #             logger.debug("WARNING: replaced backslashes in filepath to slashes: {}".format(pathToRgFile))
-
-    #         # now you may add it to the simulationRun node
-    #         self.addPathToSimulationRun(simulationRunName, pathToRgFile)
-    #     else:
-    #         logger.debug("WARNING: file {} does not exist!".format(filename))
-    #         return False
-
-    #     # start the bfm file reader
-    #     fileReader = neo4Polymer_linPolSol_Rg_fileparser(filename)
-
-    #     # get the data-array
-    #     dataArray = fileReader.parse_file()
-
-    #     # extract a keywords from the data array
-    #     # start with features to connect the parameters!
-
-    #     # ## ---------  features  --------- ###
-    #     featureKey = "feature_name"
-    #     featureList = self._findElementInKeyValueDataList(featureKey, dataArray)
-    #     if(featureList is not None):
-    #         for feature in featureList:
-    #             self.addFeatureToSimulationRun(simulationRunName, feature)
-    #     # ## ---------  features  --------- ###
-
-    #     # ## ---------  radius of gyration squared   --------- ###
-    #     mean_rgSquaredKey = "mean_rg"
-    #     mean_rgSquared = self._findElementInKeyValueDataList(mean_rgSquaredKey, dataArray)
-    #     if(mean_rgSquared is not None):
-    #         formatedRgString = "[Rg^2, {}]".format(self._float_prec4_format(mean_rgSquared[0]))
-    #         self.addResultRadiusOfGyration(simulationRunName, formatedRgString)
-    #     # ## ---------  radius of gyration squared   --------- ###
-
-    #     # finally return True if no errors occurred
-    #     return True
-
-    # def addSingleDendrimerRgTFileToDatabase(self, simulationRunName, filename):
-    #     '''High level user function to add nodes to the database by reading a radius of gyration tensor file, using the neo4Polymer_singleDendr_RGFileParser.
-
-    #     Parameters:
-    #         simulationRunName (str): name of the simulationRun
-    #         filename (str): name of the radius of gyration file
-
-    #     Returns:
-    #         True if file content was added properly
-    #         False if errors occur
-    #     '''
-    #     # first check if the simulation run exists
-    #     elementExists = self.graph.run("MATCH (elem:{}) WHERE elem.name=\"{}\" return elem".format(self.nodeType_simulationRun, simulationRunName)).data()
-    #     if (len(elementExists) == 0):
-    #         logger.debug("WARNING: {} does not exist. To add data from a BFM file, the simulationRun node must exist!".format(simulationRunName))
-    #         return False
-
-    #     # check if file exists
-    #     if(os.path.isfile(filename)):
-    #         # get full path to filename WITHOUT backslashes!
-    #         pathToRgFile = "{}: {}".format(socket.gethostname(), os.path.abspath(filename))
-    #         checkForBackslashes = pathToRgFile.replace('\\', '/')
-    #         if (pathToRgFile != checkForBackslashes):
-    #             pathToRgFile = checkForBackslashes
-    #             logger.debug("WARNING: replaced backslashes in filepath to slashes: {}".format(pathToRgFile))
-
-    #         # now you may add it to the simulationRun node
-    #         self.addPathToSimulationRun(simulationRunName, pathToRgFile)
-    #     else:
-    #         logger.debug("WARNING: file {} does not exist!".format(filename))
-    #         return False
-
-    #     # start the bfm file reader
-    #     fileReader = neo4Polymer_singleDendrimer_RgT_fileparser(filename)
-
-    #     # get the data-array
-    #     dataArray = fileReader.parse_file()
-
-    #     # extract a keywords from the data array
-    #     # start with features to connect the parameters!
-
-    #     # ## ---------  molecule part  --------- ###
-    #     #    --------- not jet used .. ---------   #
-    #     # moleculePartKey = "moleculePart"
-    #     # moleculePart = self._findElementInKeyValueDataList(moleculePartKey, dataArray)
-    #     # if(moleculePart is not None):
-    #     #     if (len(moleculePart) == 1):
-    #     #         currentMoleculePart = moleculePart[0]
-    #     #     else:
-    #     #         logger.debug("WARNING: rg tensor file contains more than one molecule part")
-    #     #         # self.addFeatureToSimulationRun(simulationRunName, feature)
-    #     # ## ---------  molecule part  --------- ###
-
-    #     # ## ---------  radius of gyration squared   --------- ###
-    #     mean_rgSquaredKey = "mean_rg"
-    #     mean_rgSquared = self._findElementInKeyValueDataList(mean_rgSquaredKey, dataArray)
-    #     if(mean_rgSquared is not None):
-    #         formatedRgString = "[Rg^2, {}]".format(self._float_prec4_format(mean_rgSquared[0]))
-    #         self.addResultRadiusOfGyration(simulationRunName, formatedRgString)
-    #     # ## ---------  radius of gyration squared   --------- ###
-
-    #     # ## ---------  asphericity   --------- ###
-    #     mean_aspericityKey = "mean_A"
-    #     mean_aspericity = self._findElementInKeyValueDataList(mean_aspericityKey, dataArray)
-    #     if(mean_aspericity is not None):
-    #         formatedRgString = "[<A>, {}]".format(self._float_prec4_format(mean_aspericity[0]))
-    #         self.addResultRadiusOfGyration(simulationRunName, formatedRgString)
-    #     # ## ---------  asphericity   --------- ###
-
-    #     # finally return True if no errors occurred
-    #     return True
-
     def _parse_line(self, line, key_dict):
         """ Utility function to apply the regex key dictionary on every line to find key value pairs
 
@@ -1632,7 +1473,6 @@ class neo4BFMPolymer:
 
             # finally return True if no errors occurred
             return True
-        
         else:
             logger.debug("WARNING: file {} did not match any bond length file signature in the first {} lines!".format(filename, counter))
             return False
@@ -1674,9 +1514,10 @@ class neo4BFMPolymer:
         # read a few lines of the file to detect the file type and choose the parser
         # setup unique line dict
         parser_dict = {
-            "dendrimerRgTensorAnalyzer": re.compile(r'# Radius of Gyration Tensor of DendrimerRGTensorAnalyzer:[ \t]+(?P<dendrimerRgTensorAnalyzer>.*)\n'),
-            "codendrimerRgTensor": re.compile(r'# ID[ \t]+Rg2[ \t]+Rgx2[ \t]+Rgy2[ \t]+Rgz2[ \t]+L1[ \t]+L2[ \t]+(?P<codendrimerRgTensor>.*)[ \t]+<A>\n'),
-            "linearChainRgFile": re.compile(r'# mcs[ \t]+R_G Chain(?P<linearChainRgFile>.*)\n')
+            "dendrimerRgTensorAnalyzer": re.compile(r'# Radius of Gyration Tensor of DendrimerRGTensorAnalyzer:[ \t]+(?P<molecule_part>.*)\n'),
+            "codendrimerRgTensor": re.compile(r'# ID[ \t]+Rg2[ \t]+Rgx2[ \t]+Rgy2[ \t]+Rgz2[ \t]+L1[ \t]+L2[ \t]+L3[ \t]+<A>\n'),
+            "linearChainRgFile": re.compile(r'# mcs[ \t]+R_G Chains\n'),
+            "bottlebrushRgFile": re.compile(r'# mcs[ \t]+R_G molecule[ \t]+R_G backbone[ \t]+R_G sidechains\n')
         }
 
         # read the first 30 lines of the file
@@ -1701,6 +1542,8 @@ class neo4BFMPolymer:
                 fileReader = neo4Polymer_cudmuc_RgTensor_fileparser(filename)
             elif (parser_identifier == "linearChainRgFile"):
                 fileReader = neo4Polymer_linPolSol_Rg_fileparser(filename)
+            elif (parser_identifier == "bottlebrushRgFile"):
+                fileReader = neo4Polymer_bottlebrush_RgFileParser(filename)
             else:
                 logger.debug("WARNING: file {} does not match any parser routine!".format(filename))
                 return False
@@ -1773,6 +1616,23 @@ class neo4BFMPolymer:
                     )
                     self.addResultAsphericity(simulationRunName, formatedAString)
                 # ## ---------  Asphericity   --------- ###
+
+            # ===================
+            if (parser_identifier == "codendrimerRgTensor"):
+                # ## ---------  radius of gyration squared   --------- ###
+                bottlebrush_rgSquaredKey = "molecule_rg"
+                bottlebrush_rgSquared = self._findElementInKeyValueDataList(bottlebrush_rgSquaredKey, dataArray)
+                backbone_rgSquaredKey = "backbone_rg"
+                backbone_rgSquared = self._findElementInKeyValueDataList(backbone_rgSquaredKey, dataArray)
+                sidechain_rgSquaredKey = "sidechain_rg"
+                sidechain_rgSquared = self._findElementInKeyValueDataList(sidechain_rgSquaredKey, dataArray)
+                if((bottlebrush_rgSquared is not None) and (backbone_rgSquared is not None) and (sidechain_rgSquared is not None)):
+                    formatedRgString = "[[{},{}],[{},{}],[{},{}]]".format(
+                        "Rg^2 total bottlebrush", self._float_prec4_format(float(bottlebrush_rgSquared[0])),
+                        "Rg^2 backbone", self._float_prec4_format(float(backbone_rgSquared[0])),
+                        "Rg^2 sidechain", self._float_prec4_format(float(sidechain_rgSquared[0]))
+                    )
+                    self.addResultRadiusOfGyration(simulationRunName, formatedRgString)
 
         # finally return True if no errors occurred
         return True
