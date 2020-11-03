@@ -9,7 +9,7 @@ with open('LICENSE.txt') as f:
 
 setup(
     name='neo4polymer',
-    version='1.1.0a1',
+    version='1.1.1a1',
     description='Neo4j python-interface to manage computer simulation data, in particular for polymers',
     long_description=readme,
     long_description_content_type='text/markdown',
