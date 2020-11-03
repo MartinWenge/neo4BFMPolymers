@@ -28,12 +28,6 @@ setup(
     ],
     python_requires='>=3.0',
     install_requires=[
-        'datetime',
-        'os',
-        'socket',
-        're',
-        'abc',
-        'logging'
         'py2neo',
         'pandas',
         'numpy'

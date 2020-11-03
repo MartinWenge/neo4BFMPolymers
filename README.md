@@ -13,6 +13,54 @@ The available node types and connection types are defined in the function defini
 
 The available functions can be used as a python module by exporting the jupyter-notebooks to a plain python file or directly in the notebook.
 
+## Basic Usage
+### Get the library from (test) pypi
+```bash
+pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple neo4polymer
+```
+
+### Setup database connection
+To apply actions on the database, setup an instance of the Graph class of the py2neo library and pass it to the neo4Polymer class.
+
+```python
+from py2neo import Graph
+import neo4Polymer
+# connect the graph with (default local) database -> it should be running already
+graph = Graph(scheme="bolt", host="localhost", port=7687, auth=('<username>', '<password>'))
+# setup instance of the neo4Polymer - BFM file interface
+myNeo4Polymer = neo4Polymer.neo4BFMPolymer(graph)
+```
+
+### Manually add nodes
+To add nodes, find the interfaces you need from the docs and run them on the neo4Polymer class instance.
+
+```python
+# add Linear Chain as Polymer node:
+myNeo4Polymer.addNewPolymer("Linear Chain")
+# add SimulationProject node
+myNeo4Polymer.addNewSimulationProject("Linear polymer solutions")
+# connect Polymer node and simulation project
+myNeo4Polymer.connectSimulationToPolymer("Linear Chain", "Linear polymer solutions")
+# add SimulationRun node
+simRunName = "Linear polymer solutions"
+myNeo4Polymer.addSimulationRunToSimulationProject("short_chain_dilute",simRunName)
+# add some meta information to SimulationRun node
+myNeo4Polymer.addLinearChainLengthToSimulationRun(simRunName,32)
+myNeo4Polymer.addVolumeFractionToSimulationRun(simRunName,0.05)
+```
+
+### Parse files to add content
+To add information from a file, use the file reader functions for supported file formats.
+
+```python
+# read in bfm / radius of gyration / bond length file
+myNeo4Polymer.addBFMFileToDatabase(simRunName,"<path/to/file>")
+myNeo4Polymer.addAnyRadiusOfGyrationFileToDatabase(simRunName,"<path/to/file>")
+myNeo4Polymer.addAnyBondLengthFileToDatabase(simRunName, "<path/to/file>")
+```
+
+### Run search queries to get 
+
 ## Getting Started
 
 For a local usage, it is recommended to install the [desktop version of neo4j](https://neo4j.com/download/) and access a plain database.
