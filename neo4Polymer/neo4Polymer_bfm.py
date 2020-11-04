@@ -1618,7 +1618,7 @@ class neo4BFMPolymer:
                 # ## ---------  Asphericity   --------- ###
 
             # ===================
-            if (parser_identifier == "codendrimerRgTensor"):
+            if (parser_identifier == "bottlebrushRgFile"):
                 # ## ---------  radius of gyration squared   --------- ###
                 bottlebrush_rgSquaredKey = "molecule_rg"
                 bottlebrush_rgSquared = self._findElementInKeyValueDataList(bottlebrush_rgSquaredKey, dataArray)
