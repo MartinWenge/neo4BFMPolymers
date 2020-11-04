@@ -91,7 +91,7 @@ class neo4PolymerRequests:
         if simProjectExist is None:
             # if simulationProject does not exist print a list of all simulationProjects
             query = "MATCH(simProject:{}) RETURN simProject.name".format(self.nodeType_SimulationProject)
-            logger.debug("WARNING: {} does not exist in database. Following SimulationProjects are available:".format(simProjectName))
+            logger.warning("WARNING: {} does not exist in database. Following SimulationProjects are available:".format(simProjectName))
             logger.warning(self.graph.run(query).to_data_frame().values)
             return None
         else:
@@ -103,6 +103,57 @@ class neo4PolymerRequests:
             result = self.graph.run(query)
             if result is None:
                 logger.debug("WARNING: no simulation projects connected to {}: {}".format(self.nodeType_SimulationProject, simProjectName))
+                return None
+            else:
+                return result.to_data_frame()
+
+    def getSimulationRunsAndProjectByParameter(self, parameterName, parameterValue = None):
+        """Returns a pandas dataframe of the "paths" from a Parameter note to the simulation project.
+
+        Paramters:
+            parameterName (str): full name of the ParamterNode name property
+            parameterValue (str, optional): value of the ParamterNode to be more specific
+
+        Returns:
+            pandas dataframe of all simulation runs with the available information
+            OR None if ParameterNode does not exits or does not include any simulationRuns
+        """
+        parameterNodeExists = self.graph.evaluate("MATCH (elem:{}) WHERE elem.name=\"{}\" RETURN elem.name".format(self.nodeType_parameter, parameterName))
+
+        if parameterNodeExists is None:
+            # if parameterNode does not exist print a list of all simulationProjects
+            query = "MATCH(parameters:{}) RETURN parameters.name".format(self.nodeType_parameter)
+            logger.warning("WARNING: {} does not exist in database. Following parameter names are available:".format(parameterName))
+            logger.warning(self.graph.run(query).to_data_frame().values)
+            return None
+        else:
+            if parameterValue is None:
+                query ="""MATCH (simProject:{})-[c1:{}]->(simRun:{})-[c2:{}]->(parameter:{} {{name:\"{}\"}})
+                RETURN simProject.name, simRun.name, parameter.name, parameter.value
+                ORDER BY simProject.name, parameter.value
+                """.format(
+                    self.nodeType_SimulationProject,
+                    self.connectionType_simTypeSimRun,
+                    self.nodeType_simulationRun,
+                    self.connectionType_simRunParameter,
+                    self.nodeType_parameter,
+                    parameterName
+                    )
+            else:
+                query ="""MATCH (simProject:{})-[c1:{}]->(simRun:{})-[c2:{}]->(parameter:{} {{name:\"{}\", value:\"{}\"}})
+                RETURN simProject.name, simRun.name, parameter.name, parameter.value
+                """.format(
+                    self.nodeType_SimulationProject,
+                    self.connectionType_simTypeSimRun,
+                    self.nodeType_simulationRun,
+                    self.connectionType_simRunParameter,
+                    self.nodeType_parameter,
+                    parameterName,
+                    parameterValue
+                    )
+            result = self.graph.run(query)
+            if result is None:
+                logger.debug("WARNING: Parameter nodes not connected to {} nodes".format(self.nodeType_SimulationProject))
                 return None
             else:
                 return result.to_data_frame()
