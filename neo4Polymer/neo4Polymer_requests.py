@@ -79,7 +79,7 @@ class neo4PolymerRequests:
     def getSimulationRunsBySimulationProject(self, simProjectName):
         """Returns a pandas dataframe of all simulation runs included in one project
 
-        Paramters:
+        Parameters:
             simProject (str): full name of the simulation project
 
         Returns:
@@ -107,12 +107,12 @@ class neo4PolymerRequests:
             else:
                 return result.to_data_frame()
 
-    def getSimulationRunsAndProjectByParameter(self, parameterName, parameterValue = None):
+    def getSimulationRunsAndProjectByParameter(self, parameterName, parameterValue=None):
         """Returns a pandas dataframe of the "paths" from a Parameter note to the simulation project.
 
-        Paramters:
-            parameterName (str): full name of the ParamterNode name property
-            parameterValue (str, optional): value of the ParamterNode to be more specific
+        Parameters:
+            parameterName (str): full name of the ParameterNode name property
+            parameterValue (str, optional): value of the ParameterNode to be more specific
 
         Returns:
             pandas dataframe of all simulation runs with the available information
@@ -122,13 +122,13 @@ class neo4PolymerRequests:
 
         if parameterNodeExists is None:
             # if parameterNode does not exist print a list of all simulationProjects
-            query = "MATCH(parameters:{}) RETURN parameters.name".format(self.nodeType_parameter)
+            query = "MATCH(parameters:{}) RETURN DISTINCT parameters.name".format(self.nodeType_parameter)
             logger.warning("WARNING: {} does not exist in database. Following parameter names are available:".format(parameterName))
             logger.warning(self.graph.run(query).to_data_frame().values)
             return None
         else:
             if parameterValue is None:
-                query ="""MATCH (simProject:{})-[c1:{}]->(simRun:{})-[c2:{}]->(parameter:{} {{name:\"{}\"}})
+                query = """MATCH (simProject:{})-[c1:{}]->(simRun:{})-[c2:{}]->(parameter:{} {{name:\"{}\"}})
                 RETURN simProject.name, simRun.name, parameter.name, parameter.value
                 ORDER BY simProject.name, parameter.value
                 """.format(
@@ -138,9 +138,9 @@ class neo4PolymerRequests:
                     self.connectionType_simRunParameter,
                     self.nodeType_parameter,
                     parameterName
-                    )
+                )
             else:
-                query ="""MATCH (simProject:{})-[c1:{}]->(simRun:{})-[c2:{}]->(parameter:{} {{name:\"{}\", value:\"{}\"}})
+                query = """MATCH (simProject:{})-[c1:{}]->(simRun:{})-[c2:{}]->(parameter:{} {{name:\"{}\", value:\"{}\"}})
                 RETURN simProject.name, simRun.name, parameter.name, parameter.value
                 """.format(
                     self.nodeType_SimulationProject,
@@ -150,11 +150,186 @@ class neo4PolymerRequests:
                     self.nodeType_parameter,
                     parameterName,
                     parameterValue
-                    )
+                )
             result = self.graph.run(query)
             if result is None:
                 logger.debug("WARNING: Parameter nodes not connected to {} nodes".format(self.nodeType_SimulationProject))
                 return None
             else:
                 return result.to_data_frame()
+
+    def getParametersByPolymer(self, polymerName):
+        """Returns a pandas dataframe of the parameters (indirectly) connected to a polymer node.
+
+        Parameters:
+            polymerName (str): name of the polymer node to be started with
+
+        Returns:
+            pandas dataframe of all parameter nodes
+            OR None if ParameterNode does not exits
+        """
+        parameterNodeExists = self.graph.evaluate("MATCH (elem:{}) RETURN elem.name".format(self.nodeType_parameter))
+        if parameterNodeExists is None:
+            logger.warning("WARNING: {} nodes do not exist in database.")
+            return None
+
+        polymerNodeExists = self.graph.evaluate("MATCH (elem:{} {{name:\"{}\"}}) RETURN elem.name".format(self.nodeType_polymer, polymerName))
+        if polymerNodeExists is None:
+            # if polymer node does not exist print a list of all polymers
+            query = "MATCH(polymers:{}) RETURN DISTINCT polymers.name".format(self.nodeType_polymer)
+            logger.warning("WARNING: {} does not exist in database. Following polymers names are available:".format(polymerName))
+            logger.warning(self.graph.run(query).to_data_frame().values)
+            return None
+
+        query = """MATCH (polymer:{} {{name:\"{}\"}})<-[c0:{}]-(simProject:{})-[c1:{}]->(simRun:{})-[c2:{}]->(parameter:{})
+        RETURN DISTINCT parameter.name, parameter.value, simProject.name, polymer.name
+        ORDER BY simProject.name, parameter.name, parameter.value
+        """.format(
+            self.nodeType_polymer,
+            polymerName,
+            self.connectionType_polymerSimulationProject,
+            self.nodeType_SimulationProject,
+            self.connectionType_simTypeSimRun,
+            self.nodeType_simulationRun,
+            self.connectionType_simRunParameter,
+            self.nodeType_parameter
+        )
+        result = self.graph.run(query)
+        if result is None:
+            logger.debug("WARNING: Parameter nodes not connected to {} nodes".format(self.nodeType_polymer))
+            return None
+        else:
+            return result.to_data_frame()
+
+    def getListOfPolymers(self, limit=None):
+        """Returns a pandas dataframe containing all polymers.
+
+        Parameters:
+            limit (int, default None): maximum number of list entries
+
+        Returns:
+            pandas dataframe of all Polymer nodes
+            OR None if there are no Polymer nodes
+        """
+        if limit:
+            query = "MATCH (polymer:Polymer) RETURN DISTINCT polymer.name LIMIT {}".format(int(limit))
+        else:
+            query = "MATCH (polymer:Polymer) RETURN DISTINCT polymer.name"
+        results = self.graph.run(query)
+
+        if results:
+            return results.to_data_frame()
+        else:
+            logger.debug("WARNING: there are no Polymer nodes")
+            return None
+
+    def getListOfSimulationProjects(self, limit=None):
+        """Returns a pandas dataframe containing all simulation projects.
+
+        Parameters:
+            limit (int, default None): maximum number of list entries
+
+        Returns:
+            pandas dataframe of all SimulationProjects nodes
+            OR None if there are no SimulationProjects nodes
+        """
+        if limit:
+            query = "MATCH (simProject:SimulationProject) RETURN DISTINCT simProject.name LIMIT {}".format(int(limit))
+        else:
+            query = "MATCH (simProject:SimulationProject) RETURN DISTINCT simProject.name"
+        results = self.graph.run(query)
+
+        if results:
+            return results.to_data_frame()
+        else:
+            logger.debug("WARNING: there are no SimulationProject nodes")
+            return None
+
+    def getListOfSimulationRuns(self, limit=None):
+        """Returns a pandas dataframe containing all simulation runs.
+
+        Parameters:
+            limit (int, default None): maximum number of list entries
+
+        Returns:
+            pandas dataframe of all SimulationRuns nodes
+            OR None if there are no SimulationRuns nodes
+        """
+        if limit:
+            query = "MATCH (simRun:SimulationRun) RETURN DISTINCT simRun.name LIMIT {}".format(int(limit))
+        else:
+            query = "MATCH (simRun:SimulationRun) RETURN DISTINCT simRun.name"
+        results = self.graph.run(query)
+
+        if results:
+            return results.to_data_frame()
+        else:
+            logger.debug("WARNING: there are no SimulationRun nodes")
+            return None
+
+    def getListOfParameters(self, limit=None):
+        """Returns a pandas dataframe containing all parameters.
+
+        Parameters:
+            limit (int, default None): maximum number of list entries
+
+        Returns:
+            pandas dataframe of all Parameter nodes
+            OR None if there are no Parameter nodes
+        """
+        if limit:
+            query = "MATCH (parameter:Parameter) RETURN DISTINCT parameter.name LIMIT {}".format(int(limit))
+        else:
+            query = "MATCH (parameter:Parameter) RETURN DISTINCT parameter.name"
+        results = self.graph.run(query)
+
+        if results:
+            return results.to_data_frame()
+        else:
+            logger.debug("WARNING: there are no Parameter nodes")
+            return None
+
+    def getListOfResultTypes(self, limit=None):
+        """Returns a pandas dataframe containing all result types.
+
+        Parameters:
+            limit (int, default None): maximum number of list entries
+
+        Returns:
+            pandas dataframe of all Result nodes
+            OR None if there are no Result nodes
+        """
+        if limit:
+            query = "MATCH (result:Result) RETURN DISTINCT result.name LIMIT {}".format(int(limit))
+        else:
+            query = "MATCH (result:Result) RETURN DISTINCT result.name"
+        results = self.graph.run(query)
+
+        if results:
+            return results.to_data_frame()
+        else:
+            logger.debug("WARNING: there are no Result nodes")
+            return None
+
+    def getListOfLeMonADEFeatures(self, limit=None):
+        """Returns a pandas dataframe containing all LeMonADE features.
+
+        Parameters:
+            limit (int, default None): maximum number of list entries
+
+        Returns:
+            pandas dataframe of all LeMonADEFeature nodes
+            OR None if there are no LeMonADEFeature nodes
+        """
+        if limit:
+            query = "MATCH (feature:LeMonADEFeature) RETURN DISTINCT feature.name LIMIT {}".format(int(limit))
+        else:
+            query = "MATCH (feature:LeMonADEFeature) RETURN DISTINCT feature.name"
+        results = self.graph.run(query)
+
+        if results:
+            return results.to_data_frame()
+        else:
+            logger.debug("WARNING: there are no Result nodes")
+            return None
 #
